@@ -1,0 +1,40 @@
+{% block content %}
+<nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd;" data-bs-theme="light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'home' %}">Break-free</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarScroll">
+      <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+        <!-- Login or register  -->
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'login' %}">Login</a>  
+        </li>
+        <!-- add friend -->
+        <li class="nav-item">
+          <a class="nav-link" href="#">Add Friend</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Settings
+          </a>
+          <ul class="dropdown-menu">
+            <!-- show profile when needed  -->
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="#">Edit Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Log out</a></li>
+          </ul>
+        </li>
+ 
+      </ul>
+      <form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search Rooms/Friends" aria-label="Search"/>
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav>
+{% endblock %}
