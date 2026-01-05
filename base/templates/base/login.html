@@ -3,14 +3,21 @@
     <div class="col-md-6 offset-md-3">
     <h1>Login</h1>
     <br>
+    <!-- method should be post to connect to views post method -->
+    <form method="post" action="">
     {% csrf_token %}
     {% for field in login_form %}
     <div class="form-group">
         {{field}}
+        {% if field.errors %}
+        <div class="text-danger">{{field.non_field_errors}}</div>
+        {% endif %}
     </div>
         <br>
     {% endfor %}
 
     <button type="submit" class="btn btn-success">Login</button>
+    </form>
     </div>
+    
 {% endblock content %}

@@ -5,6 +5,7 @@ Create user login
 django authentication
     create login form
     authenticate 
+    show messages 
 
     later for permission feature -django.contrib.contenttypes
 Create register 

@@ -17,13 +17,17 @@ class Login(View):
         # return render(request, "base/login.html", context)
 
     def post(self, request, *args, **kwargs): 
-        username  = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None: 
-            login(request, user)
-            messages.success(request, 'You Have Failed')
-            return redirect('home')
-        else: 
-            messages.success(request, 'You Have Passed')
-            return redirect('home')
+        #adding validation 
+        form = LoginModel(data=request.POST)
+
+        if form.is_valid():
+            user = form.get_user()
+            if user is not None: 
+                login(request, user)
+                messages.success(request, 'You have been logged in')
+                return redirect('home')
+
+            form.add_error(None, 'Invalid Username or Password')
+        context = {'login_form': form}
+        return render(request, "base/login.html", context)
+

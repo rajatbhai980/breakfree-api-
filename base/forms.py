@@ -4,11 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 
 User = get_user_model()
 class LoginModel(AuthenticationForm): 
-    class Meta: 
-        model = User 
-        fields = ['username', 'password'] 
-
-    #adding html attrubutes 
+    #adding html attributes 
     def __init__(self, *args, **kwargs): 
         super().__init__(*args, **kwargs)
         for field in self.fields.values(): 
