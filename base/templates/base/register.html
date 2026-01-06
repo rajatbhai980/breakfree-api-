@@ -1,0 +1,31 @@
+{% include 'base/base.html' %}
+{% block content %}
+    <div class="col-md-6 offset-md-3">
+    <h1>Register</h1>
+    <br>
+    <!-- method should be post to connect to views post method -->
+    <form method="post" action="">
+        {% csrf_token %}
+        <!-- incase of errors -->
+         {% if form.errors %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {% for field in form %}
+                {% if field.errors %}
+                    {{field.errors}}
+                {% endif %}
+            {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="form-group">
+            {{field}}
+        </div>
+        <br>
+        {% endfor %}
+    <button type="submit" class="btn btn-success">Register</button>
+    </form>
+    </div>
+    
+{% endblock content %}

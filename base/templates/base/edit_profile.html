@@ -1,0 +1,82 @@
+{% include 'base/base.html' %}
+{% block content %}
+    <div class="container bootstrap snippets bootdey">
+    <h1 class="text-primary">Edit Profile</h1>
+      <hr>
+	<div class="row">
+      <!-- left column -->
+      <div class="col-md-3">
+        <div class="text-center">
+          <img src="https://bootdey.com/img/Content/avatar/avatar7.png" class="avatar img-circle img-thumbnail" alt="avatar">
+          <h6>Upload a different photo...</h6>
+          
+          <input type="file" class="form-control">
+        </div>
+      </div>
+      
+      <!-- edit form column -->
+       {% if profile_form.errors or user_form.errors %}
+      <div class="col-md-9 personal-info">
+        <div class="alert alert-info alert-dismissable">
+            {% if profile_form.errors %}
+            {% for field in profile_form %}
+                {% if field.errors %}
+                <a class="panel-close close" data-dismiss="alert">×</a> 
+                <i class="fa fa-coffee"></i>
+                This is an <strong>bio or phone_no error</strong>. Either bio is too long or phone_no exceeds standard 10 digits.
+                {% endif %}
+            {% endfor %}
+            {% endif %}
+            <!-- continue from here -->
+            {% if user_form.errors %}
+          <a class="panel-close close" data-dismiss="alert">×</a> 
+          <i class="fa fa-coffee"></i>
+          This is an <strong>user form error</strong>. there is error in top 3 fields. 
+            {% endif %}
+        </div>
+        {% endif %}
+
+
+        <h3>Personal info</h3>
+        
+        <form action="{% url 'edit_profile' request.user.pk %}" method="POST" class="form-horizontal" role="form">
+            {% csrf_token %}
+          <div class="form-group">
+            <label class="col-lg-3 control-label">First name:</label>
+            <div class="col-lg-8">
+              <input class="form-control" name="first_name" type="text" value="{{user_form.first_name.value|default_if_none:''}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-3 control-label">Last name:</label>
+            <div class="col-lg-8">
+              <input class="form-control" name="last_name" type="text" value="{{user_form.last_name.value|default_if_none:''}}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-lg-3 control-label">Email:</label>
+            <div class="col-lg-8">
+              <input class="form-control" name='email' type="email" value="{{user_form.email.value|default_if_none:''}}">
+            </div>
+            <div class="form-group">
+            <label class="col-lg-3 control-label">Phone No:</label>
+            <div class="col-lg-8">
+              <input class="form-control" name='phone_no' type="tel" value="{{profile_form.phone_no.value|default_if_none:''}}">
+            </div>
+            <div class="form-group">
+            <label class="col-lg-3 control-label">Bio:</label>
+            <div class="col-lg-8">
+              <input class="form-control" name='bio' type="text" value="{{profile_form.bio.value|default_if_none:''}}">
+            </div>
+          </div>
+          </div>
+          </div>
+          <br>
+          <button type="submit" class="btn btn-secondary">Submit</button>
+        </form>
+      </div>
+  </div>
+</div>
+<hr>
+{% endblock content %}

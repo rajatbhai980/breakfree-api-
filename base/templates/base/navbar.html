@@ -8,26 +8,39 @@
     <div class="collapse navbar-collapse" id="navbarScroll">
       <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
         <!-- Login or register  -->
+         {% if request.user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'logout' %}">Logout</a>  
+        </li>
+        {% else %}
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" href="{% url 'login' %}">Login</a>  
         </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'register' %}">Register</a>  
+        </li>
+        
+        {% endif %}
         <!-- add friend -->
         <li class="nav-item">
           <a class="nav-link" href="#">Add Friend</a>
         </li>
-
+        {% if request.user.is_authenticated %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Settings
           </a>
+           
           <ul class="dropdown-menu">
             <!-- show profile when needed  -->
-            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Profile</a></li>
+            
             <li><a class="dropdown-item" href="#">Edit Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Log out</a></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
           </ul>
         </li>
+        {% endif %}
  
       </ul>
       <form class="d-flex" role="search">

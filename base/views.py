@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views import View
-from .forms import LoginModel
-from django.contrib.auth import login, authenticate, logout
+from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib import messages 
+
+#for getting the user model 
+User = get_user_model()
 
 # Create your views here.
 def home(request):
@@ -31,3 +34,50 @@ class Login(View):
         context = {'login_form': form}
         return render(request, "base/login.html", context)
 
+def logout_user(request): 
+    logout(request)
+    messages.success(request, "You have sucessfully logged out!")
+    return redirect('home')
+
+class Register(View): 
+    def get(self, request, *args, **kwargs): 
+        form = RegisterModel()
+        context = {'form': form}
+        return render(request, 'base/register.html', context)
+    def post(self, request, *args, **kwargs): 
+        form = RegisterModel(request.POST)
+        if form.is_valid(): 
+            form.save()
+            #for loggin in right after the register form is accepted 
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            user = authenticate(request, username=username, password=password)
+            if user is not None: 
+                login(request, user)
+                messages.success(request, "You have been registered")
+                return redirect("home")
+        return render(request, "base/register.html", {'form': form})
+    
+
+def profile(request, pk):
+    user = User.objects.get(pk=pk) 
+    context = {'user':user}
+    return render(request, 'base/profile.html', context)
+
+class EditProfile(View): 
+    def get(self, request, pk, *args, **kwargs): 
+        user_form = EditUser(instance=request.user)
+        profile_form = EditUserProfile(instance=request.user.profile)
+        context = {'user_form': user_form, 'profile_form': profile_form}
+        return render(request, 'base/edit_profile.html', context)
+
+    def post(self, request, pk, *args, **kwargs): 
+        user_form = EditUser(request.POST, instance=request.user)
+        profile_form = EditUserProfile(request.POST, instance=request.user.profile)
+        
+        if user_form.is_valid() and profile_form.is_valid(): 
+            user_form.save()
+            profile_form.save()
+
+        context = {'user_form': user_form, 'profile_form': profile_form}
+        return render(request, 'base/edit_profile.html', context)
