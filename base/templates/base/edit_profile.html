@@ -7,34 +7,46 @@
       <!-- left column -->
       <div class="col-md-3">
         <div class="text-center">
-          <img src="https://bootdey.com/img/Content/avatar/avatar7.png" class="avatar img-circle img-thumbnail" alt="avatar">
-          <h6>Upload a different photo...</h6>
           
-          <input type="file" class="form-control">
+          <img src="{{ request.user.profile.profile_pic.url }}" class="avatar img-circle img-thumbnail" alt="avatar">
+          
+        
         </div>
       </div>
+
       
       <!-- edit form column -->
-       {% if profile_form.errors or user_form.errors %}
       <div class="col-md-9 personal-info">
+
+        {% if profile_form.errors or user_form.errors %}
+
+        {% if profile_form.errors %}
         <div class="alert alert-info alert-dismissable">
-            {% if profile_form.errors %}
-            {% for field in profile_form %}
+                {% for field in profile_form %}
                 {% if field.errors %}
                 <a class="panel-close close" data-dismiss="alert">×</a> 
                 <i class="fa fa-coffee"></i>
                 This is an <strong>bio or phone_no error</strong>. Either bio is too long or phone_no exceeds standard 10 digits.
                 {% endif %}
-            {% endfor %}
-            {% endif %}
-            <!-- continue from here -->
-            {% if user_form.errors %}
-          <a class="panel-close close" data-dismiss="alert">×</a> 
-          <i class="fa fa-coffee"></i>
-          This is an <strong>user form error</strong>. there is error in top 3 fields. 
-            {% endif %}
+                {% endfor %}
         </div>
-        {% endif %}
+         {% endif %}
+
+        {% if user_form.errors %}
+         <div class="alert alert-info alert-dismissable">
+              {% for field in user_form %}
+              {% if field.errors %}
+              <a class="panel-close close" data-dismiss="alert">×</a> 
+              <i class="fa fa-coffee"></i>
+              This is an <strong>user form error</strong>. there is error in top 3 fields. 
+              {% endif %}
+              {% endfor %}
+         </div>
+         {% endif %}
+
+         {% endif %}
+      </div>
+
 
 
         <h3>Personal info</h3>
@@ -54,6 +66,13 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="col-lg-3 control-label">Change Picture:</label>
+            <div class="col-lg-8">
+          <input type="file" class="form-control" name="profile_pic">
+          </div>
+          </div>
+          
           <div class="form-group">
             <label class="col-lg-3 control-label">Email:</label>
             <div class="col-lg-8">

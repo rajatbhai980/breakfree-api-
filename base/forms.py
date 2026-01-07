@@ -38,4 +38,4 @@ class EditUser(ModelForm):
 class EditUserProfile(ModelForm):
     class Meta: 
         model = Profile
-        fields = ["phone_no", "bio"]
+        fields = ["phone_no", "bio", "profile_pic"]

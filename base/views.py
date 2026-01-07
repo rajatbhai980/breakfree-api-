@@ -4,6 +4,8 @@ from django.views import View
 from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib import messages 
+from .models import Profile
+
 
 #for getting the user model 
 User = get_user_model()
@@ -66,14 +68,16 @@ def profile(request, pk):
 
 class EditProfile(View): 
     def get(self, request, pk, *args, **kwargs): 
+        profile, _ = Profile.objects.get_or_create(user=request.user)
         user_form = EditUser(instance=request.user)
-        profile_form = EditUserProfile(instance=request.user.profile)
+        profile_form = EditUserProfile(instance=profile)
         context = {'user_form': user_form, 'profile_form': profile_form}
         return render(request, 'base/edit_profile.html', context)
 
-    def post(self, request, pk, *args, **kwargs): 
+    def post(self, request, pk, *args, **kwargs):
+        profile, _ = Profile.objects.get_or_create(user=request.user) 
         user_form = EditUser(request.POST, instance=request.user)
-        profile_form = EditUserProfile(request.POST, instance=request.user.profile)
+        profile_form = EditUserProfile(request.POST, request.FILES, instance=profile)
         
         if user_form.is_valid() and profile_form.is_valid(): 
             user_form.save()

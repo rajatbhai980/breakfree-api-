@@ -35,7 +35,7 @@
             <!-- show profile when needed  -->
             <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Profile</a></li>
             
-            <li><a class="dropdown-item" href="#">Edit Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'edit_profile' request.user.pk %}">Edit Profile</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
           </ul>
