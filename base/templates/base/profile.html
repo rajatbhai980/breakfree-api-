@@ -7,9 +7,9 @@
         <div class="card">
           <div class="rounded-top text-white d-flex flex-row" style="background-color: #000; height:200px;">
             <div class="ms-4 mt-5 d-flex flex-column" style="width: 150px;">
-              <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-profiles/avatar-1.webp"
+              <img src="{{request.user.profile.profile_pic.url}}"
                 alt="Generic placeholder image" class="img-fluid img-thumbnail mt-4 mb-2"
-                style="width: 150px; z-index: 1">
+                style="width: 150px; z-index: 1; height: 150px">
               <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-dark text-body" data-mdb-ripple-color="dark" style="z-index: 1;">
                 <a href="{% url 'edit_profile' request.user.pk %}" class="text-decoration-none link-warning">
                 Edit profile
@@ -33,9 +33,11 @@
             <div class="mb-5  text-body">
               <p class="lead fw-normal mb-1">About</p>
               <div class="p-4 bg-body-tertiary">
-                <p class="font-italic mb-1">Web Developer</p>
-                <p class="font-italic mb-1">Lives in New York</p>
-                <p class="font-italic mb-0">Photographer</p>
+                <p class="font-italic mb-1">{{request.user.profile.bio}}</p>
+                <br>
+                <br>
+                <p class="font-italic mb-1">{{request.user.profile.phone_no}}</p>
+                <p class="font-italic mb-1">{{request.user.email}}</p>
               </div>
             </div>
 

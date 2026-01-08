@@ -7,10 +7,8 @@
       <!-- left column -->
       <div class="col-md-3">
         <div class="text-center">
-          
           <img src="{{ request.user.profile.profile_pic.url }}" class="avatar img-circle img-thumbnail" alt="avatar">
           
-        
         </div>
       </div>
 
@@ -51,7 +49,7 @@
 
         <h3>Personal info</h3>
         
-        <form action="{% url 'edit_profile' request.user.pk %}" method="POST" class="form-horizontal" role="form">
+        <form action="{% url 'edit_profile' request.user.pk %}" method="POST" class="form-horizontal" role="form" enctype="multipart/form-data">
             {% csrf_token %}
           <div class="form-group">
             <label class="col-lg-3 control-label">First name:</label>

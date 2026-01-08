@@ -68,20 +68,21 @@ def profile(request, pk):
 
 class EditProfile(View): 
     def get(self, request, pk, *args, **kwargs): 
-        profile, _ = Profile.objects.get_or_create(user=request.user)
+        profile = request.user.profile
         user_form = EditUser(instance=request.user)
         profile_form = EditUserProfile(instance=profile)
         context = {'user_form': user_form, 'profile_form': profile_form}
         return render(request, 'base/edit_profile.html', context)
 
     def post(self, request, pk, *args, **kwargs):
-        profile, _ = Profile.objects.get_or_create(user=request.user) 
+        profile = request.user.profile
         user_form = EditUser(request.POST, instance=request.user)
         profile_form = EditUserProfile(request.POST, request.FILES, instance=profile)
-        
+
         if user_form.is_valid() and profile_form.is_valid(): 
             user_form.save()
             profile_form.save()
 
         context = {'user_form': user_form, 'profile_form': profile_form}
         return render(request, 'base/edit_profile.html', context)
+        
