@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.forms import ModelForm
-from .models import Profile
+from .models import Profile, Room
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 User = get_user_model()
@@ -39,3 +39,10 @@ class EditUserProfile(ModelForm):
     class Meta: 
         model = Profile
         fields = ["phone_no", "bio", "profile_pic"]
+
+class CreateRoomForm(ModelForm): 
+    class Meta: 
+        model = Room
+        fields = ["room_name", "description"]
+
+    

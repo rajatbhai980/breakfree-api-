@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views import View
-from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser
+from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages 
 from .models import Profile
 
@@ -85,4 +86,25 @@ class EditProfile(View):
 
         context = {'user_form': user_form, 'profile_form': profile_form}
         return render(request, 'base/edit_profile.html', context)
-        
+    
+class CreateRoom(LoginRequiredMixin, View): 
+    login_url ='/login/'
+    def get(self, request, *args, **kwargs): 
+        room_form = CreateRoomForm(initial={'host': request.user})
+        context = {'room_form': room_form}
+        return render(request, "base/create_room.html", context)
+
+    def post(self, request, *args, **kwargs):
+        room_form = CreateRoomForm(request.POST)
+        if room_form.is_valid():
+            room = room_form.save(commit=False)
+            room.host = request.user
+            room.save()
+            messages.success(request, "You have created a room. ")
+            return redirect("home")
+        else: 
+            pass
+
+            
+        context = {'room_form': room_form}
+        return render(request, "base/create_room.html", context)    

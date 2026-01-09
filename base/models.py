@@ -17,11 +17,11 @@ def create_profile(sender, instance, created, **kwargs):
     if created: 
         Profile.objects.create(user=instance)
     
-class room(models.Model): 
-    host = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='room', null=True)
+class Room(models.Model): 
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room', null=True)
     room_name = models.CharField(max_length=50)
     participants = models.ManyToManyField(User, related_name='joined_room')
-    description = models.TextField(max_length=500, null=True)
+    description = models.TextField(max_length=500, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True)
 
