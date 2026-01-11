@@ -4,8 +4,9 @@ from django.views import View
 from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
-from .models import Profile
+from .models import Room 
 
 
 #for getting the user model 
@@ -13,7 +14,9 @@ User = get_user_model()
 
 # Create your views here.
 def home(request):
-    return render(request, "base/home.html", {})
+    rooms = Room.objects.all()
+    context = {'rooms': rooms}
+    return render(request, "base/home.html", context)
 
 class Login(View): 
     def get(self, request, *args, **kwargs): 
@@ -102,9 +105,23 @@ class CreateRoom(LoginRequiredMixin, View):
             room.save()
             messages.success(request, "You have created a room. ")
             return redirect("home")
-        else: 
-            pass
-
             
         context = {'room_form': room_form}
         return render(request, "base/create_room.html", context)    
+    
+@login_required
+def room(request, pk):
+    room_info = Room.objects.get(pk=pk) 
+    room_info.participants.add(request.user)
+    participants = room_info.participants.all()
+    login_url = '/login/'
+    context = {'room': room_info, 'participants': participants}
+    return render(request, 'base/room.html', context)
+
+
+class SearchFriend(View): 
+    def post(self, request, *args, **kwargs): 
+        search_result = request.POST.get('search')
+        results = User.objects.filter(username__icontains=search_result)
+        context = {'results': results}
+        return render(request, 'base/search_friend.html', context)

@@ -20,7 +20,7 @@
               </div>
               <div class="col-md-9 pe-5">
 
-                <input class="form-control" rows="3" placeholder="" name="room_name">
+                <input class="form-control" rows="3" placeholder="" name="room_name" value="{{room_form.room_name.value}}">
 
               </div>
             </div>
@@ -35,7 +35,7 @@
               </div>
               <div class="col-md-9 pe-5">
 
-                <textarea class="form-control" rows="3" placeholder="Optional" name="Description"></textarea>
+                <textarea class="form-control" rows="3" placeholder="Optional" name="description" value="{{room_form.description.value}}"></textarea>
 
               </div>
             </div>
@@ -50,13 +50,12 @@
         </div>
         <br>
 
-        {%if room_form.error %}
+        {%if room_form.errors %}
         <div class="alert alert-info alert-dismissable">
             {% for field in room_form %}
-                {% if field.error %}
-                <a class="panel-close close" data-dismiss="alert">×</a> 
+                {% if field.errors %}
                 <i class="fa fa-coffee"></i>
-                This is an <strong>{{field}} error</strong>{{ field.error }}
+                This is an <strong>{{field.label}} error</strong>{{ field.errors }}
                 {% endif %}
             {% endfor %}
         </div>

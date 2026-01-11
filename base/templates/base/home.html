@@ -8,14 +8,20 @@
     <br>
     <br>
     <div class="row">
+      
+      
   <div class="col-sm-6">
-    <div class="card">
+    {% for room in rooms %}
+    <div class="card border-info text-white bg-secondary mb-3" style="max-width: 40rem;">
       <div class="card-body">
-        <h5 class="card-title">Room Name </h5>
+        <h5 class="card-title">{{room.room_name}}</h5> <a href="{% url 'room' room.pk %}"class="btn btn-light">join</a>
       </div>
     </div>
-  </div>
-  
+    <br>
+    {% endfor %}
+  </div>  
+
+
   </div>
 </div>
 

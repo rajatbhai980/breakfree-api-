@@ -19,7 +19,7 @@ def create_profile(sender, instance, created, **kwargs):
     
 class Room(models.Model): 
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room', null=True)
-    room_name = models.CharField(max_length=50)
+    room_name = models.CharField(max_length=50, unique=True)
     participants = models.ManyToManyField(User, related_name='joined_room')
     description = models.TextField(max_length=500, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
@@ -27,6 +27,10 @@ class Room(models.Model):
 
     class Meta: 
         ordering = ['updated', 'created']
+
+class Friend(models.Model): 
+    friend1 = models.ManyToManyField(User, related_name='friend')
+    friend2 = models.ManyToManyField(User, related_name='friend')
 
     
     

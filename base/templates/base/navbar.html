@@ -23,7 +23,7 @@
         {% endif %}
         <!-- add friend -->
         <li class="nav-item">
-          <a class="nav-link" href="#">Add Friend</a>
+          <a class="nav-link" href="#">Friend List</a>
         </li>
         {% if request.user.is_authenticated %}
         <li class="nav-item dropdown">
@@ -43,8 +43,9 @@
         {% endif %}
  
       </ul>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search Rooms/Friends" aria-label="Search"/>
+      <form class="d-flex" method="POST" action="{% url 'search_friend' %}" role="search">
+        {% csrf_token %}
+        <input class="form-control me-2" type="search" name="search" placeholder="Search Friends" aria-label="Search"/>
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
     </div>

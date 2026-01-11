@@ -44,5 +44,10 @@ class CreateRoomForm(ModelForm):
     class Meta: 
         model = Room
         fields = ["room_name", "description"]
+        error_messages = {
+            'room_name':{
+                'unique': ('The room with that name already exists!!')
+            }
+        }
 
     
