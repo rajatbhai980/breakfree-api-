@@ -21,11 +21,22 @@
         </li>
         
         {% endif %}
-        <!-- add friend -->
-        <li class="nav-item">
-          <a class="nav-link" href="#">Friend List</a>
-        </li>
         {% if request.user.is_authenticated %}
+        <!-- add user  -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Friends 
+          </a>
+           
+          <ul class="dropdown-menu">
+            <!-- show profile when needed  -->
+            <li><a class="dropdown-item" href="{% url 'friend_request' %}">Friend Request</a></li>
+            
+            <li><a class="dropdown-item" href="">Friend List</a></li>
+          </ul>
+        </li>
+
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Settings
@@ -45,7 +56,7 @@
       </ul>
       <form class="d-flex" method="POST" action="{% url 'search_friend' %}" role="search">
         {% csrf_token %}
-        <input class="form-control me-2" type="search" name="search" placeholder="Search Friends" aria-label="Search"/>
+        <input class="form-control me-2" type="search" name="search" placeholder="Search to add friends" aria-label="Search"/>
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
     </div>

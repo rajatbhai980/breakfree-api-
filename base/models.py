@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models import UniqueConstraint
 # Create your models here.
 class Profile(models.Model): 
     user = models.OneToOneField(User,
@@ -29,8 +30,20 @@ class Room(models.Model):
         ordering = ['updated', 'created']
 
 class Friend(models.Model): 
-    friend1 = models.ManyToManyField(User, related_name='friend')
-    friend2 = models.ManyToManyField(User, related_name='friend')
+    friend1 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    friend2 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendTo')
 
-    
+    class Meta: 
+        constraints = [
+            UniqueConstraint(fields=['friend1', 'friend2'], name='friends')
+        ]
+
+class PendingRequest(models.Model): 
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendRequestFrom')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendRequestTo')
+
+    class Meta: 
+        constraints = [
+            UniqueConstraint(fields=['sender', 'receiver'], name='requests')
+        ]
     

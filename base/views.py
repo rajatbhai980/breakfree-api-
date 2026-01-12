@@ -6,7 +6,7 @@ from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
-from .models import Room 
+from .models import Room, Friend, PendingRequest
 
 
 #for getting the user model 
@@ -65,10 +65,12 @@ class Register(View):
         return render(request, "base/register.html", {'form': form})
     
 
-def profile(request, pk):
-    user = User.objects.get(pk=pk) 
-    context = {'user':user}
-    return render(request, 'base/profile.html', context)
+class Profile(View):
+    def get(self, request, pk, *args, **kwargs):
+        user = User.objects.get(pk=pk) 
+        context = {'profileUser':user}
+        return render(request, 'base/profile.html', context)
+
 
 class EditProfile(View): 
     def get(self, request, pk, *args, **kwargs): 
@@ -125,3 +127,23 @@ class SearchFriend(View):
         results = User.objects.filter(username__icontains=search_result)
         context = {'results': results}
         return render(request, 'base/search_friend.html', context)
+    
+
+def friendRequest(request): 
+    pending_receiver = request.user.friendRequestTo
+    pending_requests = pending_receiver.sender.all()
+    context = {'pending_requests': pending_requests}
+    return render(request, 'base/friend_request.html', context)
+
+def addFriend(request, pk): 
+    friendTo = User.objects.get(pk=pk)
+    #a to be relation 
+    Friend.objects.create(
+        friend1 = request.user,
+        friend2 = friendTo
+    )
+    Friend.objects.create(
+        friend1 = friendTo, 
+        friend2 = request.user
+    )
+
