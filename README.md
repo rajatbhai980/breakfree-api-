@@ -1,6 +1,3 @@
-Created room system 
-    update feature is left 
-    delete feature is left 
-Create add search bar for searching other profiles and rooms 
-    work on friends model - todo . 
-Create leaderboard
+Go inside of base folder where entire code is given
+Base/ templates for html file 
+Media/pp for photos 
