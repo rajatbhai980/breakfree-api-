@@ -33,12 +33,7 @@ virtualenv env
 env\scripts\activate
 
 ```
-
---> Install the requirements :
-```bash
-pip install -r requirements.txt
-
-```
+ 
 
 #
 
