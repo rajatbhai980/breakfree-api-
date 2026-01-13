@@ -17,7 +17,7 @@
                 Edit profile
               </a>
               <!-- add friend -->
-              {% elif request.user.pk != profileUser.pk %}
+              {% elif request.user.pk != profileUser.pk or not friends%}
               <a href=""
                 class="text-decoration-none link-warning btn btn-outline-dark text-body" style="z-index: 1;">
                 Add Friend

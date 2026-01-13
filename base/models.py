@@ -30,8 +30,8 @@ class Room(models.Model):
         ordering = ['updated', 'created']
 
 class Friend(models.Model): 
-    friend1 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    friend2 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendTo')
+    friend1 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendModel')
+    friend2 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta: 
         constraints = [

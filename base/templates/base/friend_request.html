@@ -23,14 +23,14 @@
                 
               </thead>
               <tbody>
-                {% for sender in pending_requests %}
+                {% for pos, sender in pending_requests %}
                 <tr>
-                  <th scope="row">1</th>
+                  <th scope="row">{{pos}}</th>
                   <td>{{sender.first_name}}</td>
                   <td>Pending</td>
                   <td>
-                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-danger">Delete</button>
-                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-success ms-1">Finished</button>
+                    <a href="{% url 'friend_request_rejected' sender.pk %}" class="btn btn-danger">Delete</button>
+                    <a href="{% url 'add_friend' sender.pk %}" class="btn btn-success ms-1">Accept</button>
                   </td>
                 </tr>
                 {% endfor %}

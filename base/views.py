@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
 from .models import Room, Friend, PendingRequest
+from itertools import groupby
 
 
 #for getting the user model 
@@ -68,7 +69,10 @@ class Register(View):
 class Profile(View):
     def get(self, request, pk, *args, **kwargs):
         user = User.objects.get(pk=pk) 
-        context = {'profileUser':user}
+        friends = False
+        if request.user in user.friendModel.all().values(): 
+            friends = True
+        context = {'profileUser':user, 'friends': friends}
         return render(request, 'base/profile.html', context)
 
 
@@ -130,20 +134,35 @@ class SearchFriend(View):
     
 
 def friendRequest(request): 
-    pending_receiver = request.user.friendRequestTo
-    pending_requests = pending_receiver.sender.all()
-    context = {'pending_requests': pending_requests}
+    pending_receiver_requests = PendingRequest.objects.select_related('sender').filter(receiver = request.user)
+    requests = []
+    for pending_receiver_request in pending_receiver_requests: 
+        requests.append(pending_receiver_request.sender)
+    context = {'pending_requests': enumerate(requests, start=1)}
     return render(request, 'base/friend_request.html', context)
 
 def addFriend(request, pk): 
-    friendTo = User.objects.get(pk=pk)
+    sender = User.objects.get(pk=pk)
     #a to be relation 
     Friend.objects.create(
         friend1 = request.user,
-        friend2 = friendTo
+        friend2 = sender
     )
     Friend.objects.create(
-        friend1 = friendTo, 
+        friend1 = sender, 
         friend2 = request.user
     )
+
+    pending_row = sender.friendRequestFrom.get(receiver=request.user)
+    pending_row.delete()
+    messages.success(request, 'Sucessfully added a Friend! ')
+    return redirect('friend_request')
+
+def friendRequestRejected(request, pk): 
+    Sender = User.objects.get(pk = pk)
+    pending_row = Sender.friendRequestFrom.get(receiver=request.user)
+    pending_row.delete()
+    messages.success(request, 'Request Deleted!')
+    return redirect('friend_request')
+
 
