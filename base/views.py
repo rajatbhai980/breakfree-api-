@@ -70,6 +70,7 @@ class Profile(View):
     def get(self, request, pk, *args, **kwargs):
         user = User.objects.get(pk=pk) 
         friends = False
+        #understand the datastructure that is given by all function that stores the related objects .☑
         if request.user in user.friendModel.all().values(): 
             friends = True
         context = {'profileUser':user, 'friends': friends}
