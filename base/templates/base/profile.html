@@ -17,11 +17,13 @@
                 Edit profile
               </a>
               <!-- add friend -->
-              {% elif request.user.pk != profileUser.pk and not friends %}
-              <a href=""
+              {% elif request.user.pk != profileUser.pk and not friends and not pending %}
+              <a href="{% url 'send_request' profileUser.pk %}"
                 class="text-decoration-none link-warning btn btn-outline-dark text-body" style="z-index: 1;">
                 Add Friend
               </a>
+              {% elif pending %}
+              <h1>Friend request sent</h1>
               {% endif %}
             </div>
             <div class="ms-3" style="margin-top: 130px;">

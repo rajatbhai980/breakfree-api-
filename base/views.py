@@ -72,7 +72,11 @@ class Profile(View):
         friends = user.friendModel.filter(
             friend2 = request.user
         ).exists()
-        context = {'profileUser':user, 'friends': friends}
+        pending = PendingRequest.objects.filter(
+            sender = request.user, 
+            receiver = user
+        ).exists()
+        context = {'profileUser':user, 'friends': friends, 'pending': pending}
         return render(request, 'base/profile.html', context)
 
 
@@ -141,6 +145,16 @@ def friendRequest(request):
     context = {'pending_requests': enumerate(requests, start=1)}
     return render(request, 'base/friend_request.html', context)
 
+def createFriendRequest(request, pk): 
+    sender = request.user
+    receiver = User.objects.get(pk=pk)
+    PendingRequest.objects.create(
+        sender = sender, 
+        receiver = receiver
+    )
+    messages.success(request, "Friend Request Sent! ")
+    return redirect('profile', pk=pk)
+    
 def addFriend(request, pk): 
     sender = User.objects.get(pk=pk)
     #a to be relation 

@@ -10,7 +10,8 @@ urlpatterns = [
     path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
     path('room/<int:pk>/', views.room, name='room'),
     path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
-    path('friend_request/', views.friendRequest, name='friend_request'), 
+    path('friend_requests/', views.friendRequest, name='friend_request'), 
     path('friend_request_rejected/<int:pk>/', views.friendRequestRejected, name='friend_request_rejected'), 
-    path('add_friend/<int:pk>', views.addFriend, name='add_friend')
+    path('add_friend/<int:pk>/', views.addFriend, name='add_friend'),
+    path('send_friend_request/<int:pk>/', views.createFriendRequest, name='send_request')
 ]

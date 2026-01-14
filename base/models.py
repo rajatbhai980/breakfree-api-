@@ -41,6 +41,7 @@ class Friend(models.Model):
 class PendingRequest(models.Model): 
     sender = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendRequestFrom')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendRequestTo')
+    created_at = models.DateTimeField(auto_now=True)
 
     class Meta: 
         constraints = [
