@@ -27,7 +27,7 @@ virtualenv env
 
 ```
 
---> Activate the virtual environment :
+--> Activate the virtual environment(You need to activate the virtual environment each time you restart the pc) :
 ```bash
 env\scripts\activate
 
