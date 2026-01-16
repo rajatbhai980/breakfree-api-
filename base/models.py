@@ -29,6 +29,9 @@ class Room(models.Model):
     class Meta: 
         ordering = ['updated', 'created']
 
+    def __str__(self): 
+        return self.room_name
+
 class Friend(models.Model): 
     friend1 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='friendModel')
     friend2 = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -48,3 +51,7 @@ class PendingRequest(models.Model):
             UniqueConstraint(fields=['sender', 'receiver'], name='requests')
         ]
     
+class Counter(models.Model): 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    room = models.OneToOneField(Room, on_delete=models.CASCADE, related_name='room_counter')
+    created_at = models.DateTimeField(auto_now=True)

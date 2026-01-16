@@ -1,4 +1,4 @@
-{% include 'base/base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
 <div class="col-md-6 offset-md-3">
     {% for user in results%}
@@ -8,7 +8,7 @@
                 <tr>
                     <td class="number text-center">{{user.pk}}</td>
                     <td class="image"><img src="{{user.profile.profile_pic.url}}" alt="" style="height: 50px; width:50px; object-fit: cover;"></td>
-                    <td class="product"><strong><a href="{% url 'profile' user.pk %}" class="text-decoration-none link-danger">@{{user.username}}</a></strong><br>{{user.first_name}} {{user.last_name}}</td>
+                    <td class="product"><strong><a href="{% url 'profile' user.pk %}" class="text-decoration-none link-danger`">@{{user.username}}</a></strong><br>{{user.first_name}} {{user.last_name}}</td>
                 </tr>
             </tbody>
         </table>

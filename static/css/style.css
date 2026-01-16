@@ -1,0 +1,10 @@
+.workspace-70 {
+    height: 50vh; /* 70% of viewport height */
+    background-color: #f8f9fa; /* light gray so you can see it */
+    width: 100%;
+    margin-top: 1rem; /* small spacing below header */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed #dee2e6; /* optional, just to see boundaries */
+}

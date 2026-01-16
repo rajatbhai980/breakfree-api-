@@ -6,8 +6,10 @@ from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
-from .models import Room, Friend, PendingRequest
+from .models import Room, Friend, PendingRequest, Counter
 from itertools import groupby
+from django.utils import timezone
+from django.db.models import F, fields, ExpressionWrapper
 
 
 #for getting the user model 
@@ -68,6 +70,7 @@ class Register(View):
 
 class Profile(View):
     def get(self, request, pk, *args, **kwargs):
+        friend_count = Friend.objects.select_related('friend2').filter(friend1 = request.user).count()
         user = User.objects.get(pk=pk) 
         friends = user.friendModel.filter(
             friend2 = request.user
@@ -76,7 +79,7 @@ class Profile(View):
             sender = request.user, 
             receiver = user
         ).exists()
-        context = {'profileUser':user, 'friends': friends, 'pending': pending}
+        context = {'profileUser':user, 'friends': friends, 'pending': pending, 'friendCount': friend_count}
         return render(request, 'base/profile.html', context)
 
 
@@ -125,9 +128,18 @@ def room(request, pk):
     room_info.participants.add(request.user)
     participants = room_info.participants.all()
     login_url = '/login/'
-    context = {'room': room_info, 'participants': participants}
+    room_counts = Counter.objects.select_related(
+        "user", "created_at").filter(
+            room=room_info).annotate(
+                timesince=ExpressionWrapper(
+                    timezone.now() - F('created_at'), output_field=fields.DurationField())).order_by('timesince')
+    users_counts = {}
+    for room_count in room_counts: 
+        users_counts[room_count.user] = users_counts[room_count.created_at]
+    counting = Counter.objects.filter(user=request.user, room=room_info).exists()
+    context = {'room': room_info, 'participants': participants, 'counting': counting}
     return render(request, 'base/room.html', context)
-
+# optimize the n + 1 problem every where
 
 class SearchFriend(View): 
     def post(self, request, *args, **kwargs): 
@@ -180,3 +192,25 @@ def friendRequestRejected(request, pk):
     return redirect('friend_request')
 
 
+def displayFriendList(request): 
+    Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
+    friendList = []
+    for friendRow in Friends: 
+        friendList.append(friendRow.friend2)
+    context = {'friendList': friendList}
+    return render(request, 'base/friend_list.html', context)
+
+
+def startCounter(request, pk): 
+    Counter.objects.create(
+        user = request.user, 
+        room = Room.objects.get(pk=pk)
+    )
+    messages.success(request, "You have started the counter ")
+    return redirect('room', pk=pk)
+
+def stopCounter(request, pk): 
+    count_object = Counter.objects.filter(user=request.user, room=Room.objects.get(pk=pk))
+    count_object.delete()
+    messages.success(request, "You have stopped the counter ")
+    return redirect('room', pk=pk)
