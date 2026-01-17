@@ -1,7 +1,7 @@
 <div align="center">
 
 # BreakFree
-This is a Habit Tracker website where you can add friends, make room and count days for anything you like. I am building this project because the leaderboard system with your friends who have similars goals can increase the determination and make it more fun to use. 
+This is a Habit Tracker website where you can add friends, make room and count days for anything you like. I am building this project because the leaderboard system with your friends who have similars goals can increase everyones determination and make it more videogame like sense of satisfaction. 
 </div>
 
 ### Cloning the repository
