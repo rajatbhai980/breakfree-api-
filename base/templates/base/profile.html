@@ -1,4 +1,4 @@
-{% include 'base/base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
 <section class="h-100 gradient-custom-2">
   <div class="container py-5 h-100">
@@ -17,11 +17,13 @@
                 Edit profile
               </a>
               <!-- add friend -->
-              {% elif request.user.pk != profileUser.pk and not friends %}
-              <a href=""
+              {% elif request.user.pk != profileUser.pk and not friends and not pending %}
+              <a href="{% url 'send_request' profileUser.pk %}"
                 class="text-decoration-none link-warning btn btn-outline-dark text-body" style="z-index: 1;">
                 Add Friend
               </a>
+              {% else %}
+              <p style="z-index: 1;" class="text-dark">Friend Request Sent</p>
               {% endif %}
             </div>
             <div class="ms-3" style="margin-top: 130px;">
@@ -32,7 +34,7 @@
           <div class="p-4 text-black bg-body-tertiary">
             <div class="d-flex justify-content-end text-center py-1 text-body">
               <div class="px-3">
-                <p class="mb-1 h5">0</p>
+                <p class="mb-1 h5">{{friendCount}}</p>
                 <p class="small text-muted mb-0">Friends</p>
               </div>
             </div>

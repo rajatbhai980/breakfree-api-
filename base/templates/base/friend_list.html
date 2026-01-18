@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+{% block content %}
+    <div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <ul class="list-group">
+  <li class="list-group-item list-group-item-light">Friend List</li>
+  {% for friend in friendList %}
+  <a href="{% url 'profile' friend.pk %}" class="list-group-item list-group-item-action list-group-item-dark">{{friend.first_name}} {{friend.last_name}}</a>
+  {% endfor %}
+</ul>
+    	</div>
+	</div>
+</div>
+{% endblock content %}
