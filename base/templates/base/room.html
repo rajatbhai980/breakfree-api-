@@ -5,8 +5,26 @@
     <p>{{room.description}}</p>
 </div>
 <div class="workspace-70">
-    <div class="col-md-6 offset-md-3">
-        counter goes here
+    <div class="col-md-6">
+        <table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Position</th>
+      <th scope="col">Name</th>
+      <th scope="col">Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for index, count in room_counts %}
+    <tr>
+      <th scope="row">{{index}}</th>
+      <td>{{count.user.username}}</td>
+      <td>{{count.raw_timesince|stringformat:"s"|slice:":-7" }}</td>
+    </tr>
+    {% endfor %}
+
+  </tbody>
+</table>
     </div>
     <!-- backend UI goes here -->
 </div>
@@ -33,7 +51,7 @@
             <div class="p-3 text-white text-center">
                 <div class="card bg-light mb-3" style="max-width: 40rem;">
 
-                    <!-- counter -->
+                    
                     <div class="card-body">
                         {% if counting %}
                         <a href="{% url 'stop_counter' room.pk %}" class="btn btn-dark" data-mdb-ripple-init>Stop</a>

@@ -52,6 +52,11 @@ class PendingRequest(models.Model):
         ]
     
 class Counter(models.Model): 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    room = models.OneToOneField(Room, on_delete=models.CASCADE, related_name='room_counter')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_counter')
     created_at = models.DateTimeField(auto_now=True)
+
+    class Meta: 
+        constraints = [
+            UniqueConstraint(fields=['user', 'room'], name='counts')
+        ]
