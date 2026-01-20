@@ -23,6 +23,8 @@ class Room(models.Model):
     room_name = models.CharField(max_length=50, unique=True)
     participants = models.ManyToManyField(User, related_name='joined_room')
     description = models.TextField(max_length=500, null=True, blank=True)
+    password = models.CharField(max_length=50, blank=True, null=True)
+    private = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True)
 

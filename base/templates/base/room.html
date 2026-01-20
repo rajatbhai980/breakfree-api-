@@ -1,7 +1,45 @@
 {% extends 'base/base.html' %}
 {% block content %}
-<div class="col-md-6 offset-md-3">
-    <h1>{{room.room_name|upper}}</h1>
+<div class="col-md-6 offset-md-6">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0">{{ room.room_name|upper }}</h1>
+
+        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-danger">
+                🚪
+            </a>
+
+
+            <div class="dropdown">
+                <button 
+                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="Settings"
+                >
+                    ⚙️
+                </button>
+             <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'participants' room.pk %}">
+                            Participants
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="">
+                            Edit Room
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="">
+                            Delete Room
+                        </a>
+                    </li>
+                </ul>
+                </div>
+
+        </div>
     <p>{{room.description}}</p>
 </div>
 <div class="workspace-70">
@@ -27,6 +65,10 @@
 </table>
     </div>
     <!-- backend UI goes here -->
+</div>
+<br>
+<div class="col-md-6 offset-md-6">
+<a href="{% url 'leaderboard' room.pk %}" class="btn btn-dark" data-mdb-ripple-init>See More</a>
 </div>
 <br>
 <br>
