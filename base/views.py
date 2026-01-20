@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views import View
-from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm
+from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -9,7 +9,7 @@ from django.contrib import messages
 from .models import Room, Friend, PendingRequest, Counter
 from itertools import groupby
 from django.utils import timezone
-from django.db.models import F, fields, ExpressionWrapper
+from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef
 from django.db.models.functions import TruncSecond
 from datetime import datetime
 
@@ -19,8 +19,20 @@ User = get_user_model()
 
 # Create your views here.
 def home(request):
-    rooms = Room.objects.all()
-    context = {'rooms': rooms}
+    if request.user.is_authenticated: 
+        Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
+        friendList = []
+        for friendRow in Friends: 
+            friendList.append(friendRow.friend2)
+        rooms = Room.objects.filter( Q(host__in=friendList) | Q(host=request.user)).annotate(room_authenticated=Exists(
+            Room.participants.through.objects.filter(
+                room_id=OuterRef('pk'),
+                user_id=request.user.pk
+            )
+        ))
+        context = {'rooms': rooms}
+    else: 
+        context = {}
     return render(request, "base/home.html", context)
 
 class Login(View): 
@@ -117,9 +129,13 @@ class CreateRoom(LoginRequiredMixin, View):
         if room_form.is_valid():
             room = room_form.save(commit=False)
             room.host = request.user
+            password = room_form.cleaned_data['password']
+            if password: 
+                room.private = True
             room.save()
+            room_pk = room.pk
             messages.success(request, "You have created a room. ")
-            return redirect("home")
+            return redirect("room", pk=room_pk)
             
         context = {'room_form': room_form}
         return render(request, "base/create_room.html", context)    
@@ -134,7 +150,7 @@ def room(request, pk):
         "user").filter(
             room=room_info).annotate(
                 raw_timesince=ExpressionWrapper(
-                    (timezone.now() - F('created_at')), output_field=fields.DurationField())).order_by('-raw_timesince')
+                    (timezone.now() - F('created_at')), output_field=fields.DurationField())).order_by('-raw_timesince')[:10]
     
     counting = Counter.objects.filter(user=request.user, room=room_info).exists()
     context = {'room': room_info, 'participants': participants, 'counting': counting, 'room_counts': enumerate(room_counts, 1)}
@@ -214,3 +230,39 @@ def stopCounter(request, pk):
     count_object.delete()
     messages.success(request, "You have stopped the counter ")
     return redirect('room', pk=pk)
+
+def leaderboard(request, pk): 
+    room = Room.objects.get(pk=pk)
+    room_counts = Counter.objects.select_related(
+        "user").filter(
+            room=room).annotate(
+                raw_timesince=ExpressionWrapper(
+                    (timezone.now() - F('created_at')), output_field=fields.DurationField())).order_by('-raw_timesince')
+    context = {'room_counts': enumerate(room_counts), 'room': room}
+    return render(request, 'base/leaderboard.html', context)
+
+class RoomAuthorization(View): 
+    def get(self, request, pk, *args, **kwargs): 
+        room = Room.objects.get(pk=pk)
+        context = {'room': room}
+        return render(request, 'base/room_authorization.html', context)
+    def post(self, request, pk, * args, **kwargs): 
+        room_form = RoomAuthorizationForm(request.POST)
+        room = Room.objects.get(pk=pk)
+        if room_form.is_valid(): 
+            password = room_form.cleaned_data['password']
+            room_password = room.password
+            if password == room_password: 
+                messages.success(request, "authenticated")
+                return redirect("room", pk=pk)
+            else: 
+                messages.success(request, "try again")
+                return redirect("room_authorization", pk=pk)
+            
+        context = {'room': room}
+        return render(request, 'base/room_authorization.html', context)
+    
+def participants(request, pk): 
+    participants = Room.objects.get(room=pk)
+    context = {'participants': participants}
+    return render(request, 'base/Participants.html', context)

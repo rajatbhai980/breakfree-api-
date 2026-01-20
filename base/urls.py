@@ -17,4 +17,7 @@ urlpatterns = [
     path('friend_list/', views.displayFriendList, name='friend_list'), 
     path('start_counter/<int:pk>/', views.startCounter, name='start_counter'),
     path('stop_counter/<int:pk>/', views.stopCounter, name='stop_counter'),
+    path('leaderboard/<int:pk>/', views.leaderboard, name='leaderboard'), 
+    path('room_authorization/<int:pk>/', views.RoomAuthorization.as_view(), name='room_authorization'),
+    path('participants/<int:pk>', views.participants, name='participants')
 ]

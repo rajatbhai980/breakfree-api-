@@ -14,7 +14,16 @@
     {% for room in rooms %}
     <div class="card border-info text-white bg-secondary mb-3" style="max-width: 40rem;">
       <div class="card-body">
+        {% if not room.private %}
         <h5 class="card-title">{{room.room_name}}</h5> <a href="{% url 'room' room.pk %}"class="btn btn-light">join</a>
+        {% else %}
+          {% if room.room_authenticated %}
+          <h5 class="card-title">{{room.room_name}}</h5> <a href="{% url 'room' room.pk %}"class="btn btn-light">join</a>
+          {% else %}
+          <h5 class="card-title">{{room.room_name}}</h5> <a href="{% url 'room_authorization' room.pk %}"class="btn btn-light">join</a>
+          <p>Private</p>
+          {% endif %}
+        {% endif %}
       </div>
     </div>
     <br>

@@ -1,0 +1,46 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<section class="vh-100" style="background-color: #3b3939;">
+  <div class="container h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-xl-9">
+
+        <h1 class="text-white mb-4">{{room.room_name}}</h1>
+
+        <div class="card" style="border-radius: 15px;">
+          <div class="card-body">
+            <form action="{% url 'room_authorization' room.pk %}" method="POST">
+                {% csrf_token %}
+
+
+            <hr class="mx-n3">
+
+            <div class="row align-items-center py-3">
+              <div class="col-md-3 ps-5">
+
+                <h6 class="mb-0">Pin</h6>
+
+              </div>
+              <div class="col-md-9 pe-5">
+
+                <input class="form-control" rows="3" placeholder="Enter Password" name="password" value="{{room_form.Pin.value}}">
+
+              </div>
+            </div>
+
+            <hr class="mx-n3">
+
+            <div class="px-5 py-4">
+              <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-secondary btn-lg">Submit</button>
+            </div>
+            </form>
+          </div>
+        </div>
+        <br>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
