@@ -11,29 +11,91 @@
 
             <form class="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2">
 
-            <table class="table mb-4">
-              <thead>
-                
-                <tr>
-                  <th scope="col">No.</th>
-                  <th scope="col">Username</th>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Actions</th>
-                </tr>
-                
-              </thead>
-              <tbody>
+              <table class="table mb-4">
+                <thead>
 
-                <tr>
-                  <th scope="row"></th>
-                  <td></td>
-                  <td>Pending</td>
-                  <td>
-                  </td>
-                </tr>
+                  <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Actions</th>
+                  </tr>
 
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                
+                {% if isPrivate %}
+                      {% for i, participant in participants %}
+                        {% if participant == room.host %}
+                          
+                          <tr>
+                            <th scope="row">{{i}}</th>
+                            {% if participant == request.user %}
+                            <td><strong>{{participant.first_name}} {{participant.last_name}}</strong></td>
+                            {% else %}
+                            <td>{{participant.first_name}} {{participant.last_name}}</td>
+                            {% endif %}
+                            <td>Cheif</td>
+                            <td>
+                            </td>
+                          </tr>
+                        {% elif participant.is_moderator%}
+                          <!-- moderators  -->
+                          <tr>
+                            <th scope="row">{{i}}</th>
+                            {% if participant == request.user %}
+                            <td><strong>{{participant.first_name}} {{participant.last_name}}</strong></td>
+                            {% else %}
+                            <td>{{participant.first_name}} {{participant.last_name}}</td>
+                            {% endif %}
+                            <td>Moderator</td>
+                            <td>
+                              {% if request.user == room.host %}
+                              <a href="{% url 'remove_moderator' room.pk participant.pk %}" class="btn btn-dark">Demote</a>
+                              <a href="{% url 'remove_participant' room.pk participant.pk %}" class="btn btn-danger ">Remove</a>
+                              {% endif %}
+                            </td>
+                          </tr>
+                        {% else %}
+                          <!-- grunts  -->
+                          <tr>
+                            <th scope="row">{{i}}</th>
+                            {% if participant == request.user %}
+                            <td><strong>{{participant.first_name}} {{participant.last_name}}</strong></td>
+                            {% else %}
+                            <td>{{participant.first_name}} {{participant.last_name}}</td>
+                            {% endif %}
+                            <td>Grunt</td>
+                            <td>
+                              {% if request.user == room.host%}
+                              <a href="{% url 'add_moderator' room.pk participant.pk %}" class="btn btn-dark ">Promote</a>
+                              <a href="{% url 'remove_participant' room.pk participant.pk %}" class="btn btn-danger ">Remove</a>
+                              {% elif isUserModerator %}
+                              <a href="{% url 'remove_participant' room.pk participant.pk %}" class="btn btn-danger ">Remove</a>
+                              {% endif %}
+                            </td>
+                          </tr>
+                      {% endif %}
+                    {% endfor %}
+              {% else %}
+                  <!-- public rooms -->
+                  {% for i, participant in participants %}
+                        <tr>
+                        <th scope="row">{{i}}</th>
+                        {% if participant == request.user %}
+                        <td><strong>{{participant.first_name}} {{participant.last_name}}</strong></td>
+                        {% else %}
+                        <td>{{participant.first_name}} {{participant.last_name}}</td>
+                        {% endif %}
+                        <td></td>
+                        <td>
+                          Change room to private to add rank and actions
+                        </td>
+                      </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+              </table>
 
           </div>
         </div>

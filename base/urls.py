@@ -19,5 +19,9 @@ urlpatterns = [
     path('stop_counter/<int:pk>/', views.stopCounter, name='stop_counter'),
     path('leaderboard/<int:pk>/', views.leaderboard, name='leaderboard'), 
     path('room_authorization/<int:pk>/', views.RoomAuthorization.as_view(), name='room_authorization'),
-    path('participants/<int:pk>', views.participants, name='participants')
+    path('participants/<int:pk>', views.participants, name='participants'), 
+    path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.addModerator, name='add_moderator'),
+    path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.removeModerator, name='remove_moderator'), 
+    path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.removeParticipant, name='remove_participant'), 
+    
 ]

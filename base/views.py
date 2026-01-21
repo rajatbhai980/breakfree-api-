@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.views import View
 from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
@@ -263,6 +264,51 @@ class RoomAuthorization(View):
         return render(request, 'base/room_authorization.html', context)
     
 def participants(request, pk): 
-    participants = Room.objects.get(room=pk)
-    context = {'participants': participants}
+    room = Room.objects.get(pk=pk)
+    #moderator group creation/fetch
+    groupName = f"{room.room_name}_moderators"
+    moderators, created = Group.objects.get_or_create(name=groupName)
+    isPrivate = room.private
+    isUserModerator = moderators.user_set.filter(pk=request.user.pk).exists()
+    participants = room.participants.all().annotate(is_moderator=Exists(
+        moderators.user_set.filter(pk=OuterRef('pk'))
+        #how does it know pk is of the user 
+    ))
+    context = {'participants': enumerate(participants, 1), 'room': room, 'isPrivate': isPrivate, 'isUserModerator': isUserModerator}
     return render(request, 'base/Participants.html', context)
+
+def addModerator(request, room_pk, user_pk):
+    room = Room.objects.get(pk = room_pk)
+    candidate = User.objects.get(pk = user_pk)
+
+    groupName = f"{room.room_name}_moderators"
+    group = Group.objects.get(name=groupName)
+    
+    candidate.groups.add(group)
+    messages.success(request, "sucessfully promoted! ")
+    return redirect('participants', pk=room.pk)
+
+def removeModerator(request, room_pk, user_pk): 
+    room = Room.objects.get(pk=room_pk)
+    candidate = User.objects.get(pk=user_pk)
+
+    groupName = f"{room.room_name}_moderators"
+    group = Group.objects.get(name=groupName)
+
+    candidate.groups.remove(group)
+    messages.success(request, "sucessfully demoted!")
+    return redirect('participants', pk=room_pk)
+
+def removeParticipant(request, room_pk, user_pk): 
+    room = Room.objects.get(pk=room_pk)
+    user = User.objects.get(pk=user_pk)
+
+    #if user was a moderator 
+    groupName = f"{room.room_name}_moderators"
+    group = Group.objects.get(name=groupName)
+    if group.user_set.filter(pk=user.pk): 
+        group.user_set.remove(user)
+
+    room.participants.remove(user)
+    messages.success(request, "sucessfully removed!")
+    return redirect('participants', pk=room_pk)
