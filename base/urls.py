@@ -8,6 +8,8 @@ urlpatterns = [
     path('profile/<int:pk>/', views.Profile.as_view(), name='profile'),
     path('edit_profile/<int:pk>/', views.EditProfile.as_view(), name='edit_profile'),
     path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
+    path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
+    path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
     path('room/<int:pk>/', views.room, name='room'),
     path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
     path('friend_requests/', views.friendRequest, name='friend_request'), 
@@ -23,5 +25,4 @@ urlpatterns = [
     path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.addModerator, name='add_moderator'),
     path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.removeModerator, name='remove_moderator'), 
     path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.removeParticipant, name='remove_participant'), 
-    
 ]

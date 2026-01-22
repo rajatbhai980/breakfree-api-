@@ -48,9 +48,6 @@ class CreateRoomForm(ModelForm):
             'room_name':{
                 'unique': ('The room with that name already exists!!')
             },
-            'password':{
-                'max_length': ('the pin should be of 4 digits')
-            }
         }
 
 class RoomAuthorizationForm(ModelForm): 

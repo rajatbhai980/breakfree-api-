@@ -121,7 +121,8 @@ class EditProfile(View):
 class CreateRoom(LoginRequiredMixin, View): 
     login_url ='/login/'
     def get(self, request, *args, **kwargs): 
-        room_form = CreateRoomForm(initial={'host': request.user})
+        room = Room(host=request.user)
+        room_form = CreateRoomForm(instance=room)
         context = {'room_form': room_form}
         return render(request, "base/create_room.html", context)
 
@@ -130,7 +131,7 @@ class CreateRoom(LoginRequiredMixin, View):
         if room_form.is_valid():
             room = room_form.save(commit=False)
             room.host = request.user
-            password = room_form.cleaned_data['password']
+            password = room.password
             if password: 
                 room.private = True
             room.save()
@@ -140,6 +141,7 @@ class CreateRoom(LoginRequiredMixin, View):
             
         context = {'room_form': room_form}
         return render(request, "base/create_room.html", context)    
+
     
 @login_required
 def room(request, pk):
@@ -157,6 +159,35 @@ def room(request, pk):
     context = {'room': room_info, 'participants': participants, 'counting': counting, 'room_counts': enumerate(room_counts, 1)}
     return render(request, 'base/room.html', context)
 # optimize the n + 1 problem every where
+
+class UpdateRoom(LoginRequiredMixin, View): 
+    login_url ='/login/'
+    def get(self, request,  pk, *args, **kwargs): 
+        room = Room.objects.get(pk=pk)
+        UpdateRoom = CreateRoomForm(instance=room)
+        context = {'update_form': UpdateRoom}
+        return render(request, 'base/update_room.html', context)   
+    def post(self, request, pk, *args, **kwargs): 
+        room = Room.objects.get(pk=pk)
+        UpdateForm = CreateRoomForm(request.POST, instance=room)
+        if UpdateForm.is_valid(): 
+            form = UpdateForm.save(commit=False)
+            if form.password: 
+                room.private = True
+            form.save()
+
+            messages.success(request, "Room sucessfully updated!")
+            return redirect('room', pk=pk)
+        context = {'update_form': UpdateForm }
+        return render(request, 'base/update_room.html', context) 
+    
+def DeleteRoom(request, pk):
+    room = Room.objects.get(pk=pk)
+    room_name = room.room_name
+    room.delete()
+    messages.success(request, f"{room_name} room has been deleted" ) 
+    return redirect('home')
+    
 
 class SearchFriend(View): 
     def post(self, request, *args, **kwargs): 
@@ -312,3 +343,5 @@ def removeParticipant(request, room_pk, user_pk):
     room.participants.remove(user)
     messages.success(request, "sucessfully removed!")
     return redirect('participants', pk=room_pk)
+
+

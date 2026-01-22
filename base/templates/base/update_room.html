@@ -5,11 +5,11 @@
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-xl-9">
 
-        <h1 class="text-white mb-4">Create Room</h1>
+        <h1 class="text-white mb-4">Update Room</h1>
 
         <div class="card" style="border-radius: 15px;">
           <div class="card-body">
-            <form action="{% url 'create_room' %}" method="POST">
+            <form action="" method="POST">
                 {% csrf_token %}
 
             <div class="row align-items-center py-3">
@@ -19,8 +19,8 @@
 
               </div>
               <div class="col-md-9 pe-5">
-              
-                {{room_form.room_name}}
+
+                {{update_form.room_name}}
 
               </div>
             </div>
@@ -35,7 +35,7 @@
               </div>
               <div class="col-md-9 pe-5">
 
-                {{room_form.password}}
+                {{update_form.password}}
 
               </div>
             </div>
@@ -50,7 +50,7 @@
               </div>
               <div class="col-md-9 pe-5">
 
-                {{room_form.description}}
+                {{update_form.description}}
 
               </div>
             </div>
@@ -65,9 +65,9 @@
         </div>
         <br>
 
-        {%if room_form.errors %}
+        {%if update_form.errors %}
         <div class="alert alert-info alert-dismissable">
-            {% for field in room_form %}
+            {% for field in update_form %}
                 {% if field.errors %}
                 <i class="fa fa-coffee"></i>
                 This is an <strong>{{field.label}} error</strong>{{ field.errors }}
