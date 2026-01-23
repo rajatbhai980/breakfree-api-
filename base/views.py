@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef
 from django.db.models.functions import TruncSecond
 from datetime import datetime
+from django.core.paginator import Paginator
 
 
 #for getting the user model 
@@ -31,7 +32,10 @@ def home(request):
                 user_id=request.user.pk
             )
         ))
-        context = {'rooms': rooms}
+        page_number = request.GET.get('page')
+        pages = Paginator(rooms, 3)
+        curr_page = pages.get_page(page_number)
+        context = {'curr_page': curr_page}
     else: 
         context = {}
     return render(request, "base/home.html", context)
@@ -174,6 +178,8 @@ class UpdateRoom(LoginRequiredMixin, View):
             form = UpdateForm.save(commit=False)
             if form.password: 
                 room.private = True
+            else:
+                room.private = False
             form.save()
 
             messages.success(request, "Room sucessfully updated!")
@@ -190,10 +196,16 @@ def DeleteRoom(request, pk):
     
 
 class SearchFriend(View): 
-    def post(self, request, *args, **kwargs): 
-        search_result = request.POST.get('search')
-        results = User.objects.filter(username__icontains=search_result)
-        context = {'results': results}
+    def get(self, request, *args, **kwargs): 
+        search_result = request.GET.get('q')
+        if search_result: 
+            results = User.objects.filter(username__icontains=search_result)
+        else: 
+            results = []
+        pagination = Paginator(results, 2)
+        pagenumber = request.GET.get('page')
+        users = pagination.get_page(pagenumber)
+        context = {'search_results': enumerate(users, 1), 'results': users, 'query': search_result}
         return render(request, 'base/search_friend.html', context)
     
 

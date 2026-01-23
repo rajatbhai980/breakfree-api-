@@ -11,7 +11,7 @@
       
       
   <div class="col-sm-6">
-    {% for room in rooms %}
+    {% for room in curr_page %}
     <div class="card border-info text-white bg-secondary mb-3" style="max-width: 40rem;">
       <div class="card-body">
         {% if not room.private %}
@@ -28,11 +28,45 @@
     </div>
     <br>
     {% endfor %}
-  </div>  
-
-
+    </div>
+    </div>
   </div>
 </div>
+<br>
+<br>
+{% if curr_page %}
+<div class="col-md-6">
+  <nav aria-label="...">
+  <ul class="pagination">
+    {% if curr_page.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{curr_page.previous_page_number}}" tabindex="-1">Previous</a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">{{curr_page.previous_page_number}}</a></li>
+    {% else %}
+    <li class="page-item disabled">
+      <a class="page-link" href="" tabindex="-1">Previous</a>
+    </li>
+    {% endif %}
+
+    <li class="page-item active">
+      <a class="page-link" href="#">{{curr_page.number}} <span class="sr-only"></span></a>
+    </li>
+
+    {% if curr_page.has_next%}
+    <li class="page-item"><a class="page-link" href="">{{curr_page.next_page_number}}</a></li>
+    <li class="page-item">
+      <a class="page-link" href="?page={{curr_page.next_page_number}}">Next</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <a class="page-link" href="">Next</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+  </div>
+  {% endif %}
 
 </div>
 {% endblock content %}
