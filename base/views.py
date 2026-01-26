@@ -24,6 +24,8 @@ def home(request):
     if request.user.is_authenticated: 
         Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
         friendList = []
+        genres = Genre.objects.all()
+        genre_name = request.GET.get('genre')
         for friendRow in Friends: 
             friendList.append(friendRow.friend2)
         rooms = Room.objects.filter( Q(host__in=friendList) | Q(host=request.user)).annotate(room_authenticated=Exists(
@@ -32,13 +34,17 @@ def home(request):
                 user_id=request.user.pk
             )
         ))
+        if genre_name: 
+            genre = Genre.objects.get(name=genre_name)
+            rooms = rooms.filter(genre=genre)
         page_number = request.GET.get('page')
         pages = Paginator(rooms, 3)
         curr_page = pages.get_page(page_number)
-        context = {'curr_page': curr_page}
+        context = {'curr_page': curr_page, 'genres': genres, 'genre_name': genre_name}
     else: 
         context = {}
     return render(request, "base/home.html", context)
+
 
 class Login(View): 
     def get(self, request, *args, **kwargs): 
@@ -176,13 +182,21 @@ def room(request, pk):
 class UpdateRoom(LoginRequiredMixin, View): 
     login_url ='/login/'
     def get(self, request,  pk, *args, **kwargs): 
-        room = Room.objects.get(pk=pk)
+        room = Room.objects.select_related('genre').get(pk=pk)
         UpdateRoom = CreateRoomForm(instance=room)
-        context = {'update_form': UpdateRoom}
+        genres = Genre.objects.all()
+        context = {'update_form': UpdateRoom, 'genres': genres, 'room': room}
         return render(request, 'base/update_room.html', context)   
     def post(self, request, pk, *args, **kwargs): 
-        room = Room.objects.get(pk=pk)
-        UpdateForm = CreateRoomForm(request.POST, instance=room)
+        room = Room.objects.select_related('genre').get(pk=pk)
+        post_data = request.POST.copy()
+
+        genre_name = post_data.get('genre_name')
+        if genre_name: 
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+            post_data['genre'] = genre
+        
+        UpdateForm = CreateRoomForm(post_data, instance=room)
         if UpdateForm.is_valid(): 
             form = UpdateForm.save(commit=False)
             if form.password: 
@@ -193,7 +207,8 @@ class UpdateRoom(LoginRequiredMixin, View):
 
             messages.success(request, "Room sucessfully updated!")
             return redirect('room', pk=pk)
-        context = {'update_form': UpdateForm }
+        genres = Genre.objects.all()
+        context = {'update_form': UpdateForm, 'genres': genres, 'room': room}
         return render(request, 'base/update_room.html', context) 
     
 def DeleteRoom(request, pk):

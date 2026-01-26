@@ -30,6 +30,26 @@
             <div class="row align-items-center py-3">
               <div class="col-md-3 ps-5">
 
+                <h6 class="mb-0">Category</h6>
+
+              </div>
+              <div class="col-md-9 pe-5">
+
+                <input type="text" name="genre_name" list="genre-list" value="{{update_form.instance.genre.name}}">
+                <datalist id ="genre-list">
+                  {% for genre in genres %}
+                  <option value="{{genre.name}}">{{genre.name}}</option>
+                  {% endfor %}
+                </datalist>
+
+              </div>
+            </div>
+
+             <hr class="mx-n3">
+
+            <div class="row align-items-center py-3">
+              <div class="col-md-3 ps-5">
+
                 <h6 class="mb-0">Pin</h6>
 
               </div>
@@ -39,6 +59,7 @@
 
               </div>
             </div>
+
 
             <hr class="mx-n3">
 

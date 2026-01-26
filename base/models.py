@@ -21,6 +21,9 @@ def create_profile(sender, instance, created, **kwargs):
 class Genre(models.Model): 
     name = models.CharField(unique=True)
 
+    def __str__(self): 
+        return str(self.name)
+
 class Room(models.Model): 
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room', null=True)
     room_name = models.CharField(max_length=50, unique=True)
