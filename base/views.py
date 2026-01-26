@@ -34,6 +34,8 @@ def home(request):
                 user_id=request.user.pk
             )
         ))
+        if genre_name == None: 
+            genre_name = ""
         if genre_name: 
             genre = Genre.objects.get(name=genre_name)
             rooms = rooms.filter(genre=genre)
