@@ -71,7 +71,11 @@
       <ul class="pagination">
         {% if curr_page.has_previous %}
         <li class="page-item">
+          {% if genre_name != "None" %}
           <a class="page-link" href="?genre={{genre_name}}&page={{curr_page.previous_page_number}}" tabindex="-1">Previous</a>
+          {% else %}
+          <a class="page-link" href="?genre=&page={{curr_page.previous_page_number}}" tabindex="-1">Previous</a>
+          {% endif %}
         </li>
         <li class="page-item"><a class="page-link" href="#">{{curr_page.previous_page_number}}</a></li>
         {% else %}
@@ -87,7 +91,11 @@
         {% if curr_page.has_next%}
         <li class="page-item"><a class="page-link" href="">{{curr_page.next_page_number}}</a></li>
         <li class="page-item">
+          {% if genre_name != "None" %}
           <a class="page-link" href="?genre={{genre_name}}&page={{curr_page.next_page_number}}">Next</a>
+          {% else %}
+          <a class="page-link" href="?genre=&page={{curr_page.next_page_number}}">Next</a>
+          {% endif %}
         </li>
         {% else %}
         <li class="page-item disabled">
