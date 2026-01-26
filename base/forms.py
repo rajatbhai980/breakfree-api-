@@ -43,11 +43,12 @@ class EditUserProfile(ModelForm):
 class CreateRoomForm(ModelForm): 
     class Meta: 
         model = Room
-        fields = ["room_name", "description", 'password']
+        fields = ["room_name", "description", 'password', 'genre']
         error_messages = {
             'room_name':{
                 'unique': ('The room with that name already exists!!')
             },
+            
         }
 
 class RoomAuthorizationForm(ModelForm): 

@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
-from .models import Room, Friend, PendingRequest, Counter
+from .models import Room, Friend, PendingRequest, Counter, Genre
 from itertools import groupby
 from django.utils import timezone
 from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef
@@ -127,11 +127,20 @@ class CreateRoom(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs): 
         room = Room(host=request.user)
         room_form = CreateRoomForm(instance=room)
-        context = {'room_form': room_form}
+        genres = Genre.objects.all()
+        context = {'room_form': room_form, 'genres': genres}
         return render(request, "base/create_room.html", context)
 
     def post(self, request, *args, **kwargs):
-        room_form = CreateRoomForm(request.POST)
+        post_data = request.POST.copy()
+        
+        genre_name = post_data.get('genre_name')
+        if genre_name: 
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+            post_data['genre'] = genre
+        
+        room_form = CreateRoomForm(post_data)
+        genres = Genre.objects.all()
         if room_form.is_valid():
             room = room_form.save(commit=False)
             room.host = request.user
@@ -143,7 +152,7 @@ class CreateRoom(LoginRequiredMixin, View):
             messages.success(request, "You have created a room. ")
             return redirect("room", pk=room_pk)
             
-        context = {'room_form': room_form}
+        context = {'room_form': room_form, 'genres': genres}
         return render(request, "base/create_room.html", context)    
 
     

@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 {% block content %}
-   <section class="vh-100" style="background-color: #3b3939;">
+<section class="vh-100" style="background-color: #3b3939;">
   <div class="container h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-xl-9">
@@ -10,56 +10,77 @@
         <div class="card" style="border-radius: 15px;">
           <div class="card-body">
             <form action="{% url 'create_room' %}" method="POST">
-                {% csrf_token %}
+              {% csrf_token %}
 
-            <div class="row align-items-center py-3">
-              <div class="col-md-3 ps-5">
+              <div class="row align-items-center py-3">
+                <div class="col-md-3 ps-5">
 
-                <h6 class="mb-0">Room name</h6>
+                  <h6 class="mb-0">Room name</h6>
 
+                </div>
+                <div class="col-md-9 pe-5">
+
+                  {{room_form.room_name}}
+
+                </div>
               </div>
-              <div class="col-md-9 pe-5">
-              
-                {{room_form.room_name}}
 
+              <hr class="mx-n3">
+
+              <div class="row align-items-center py-3">
+                <div class="col-md-3 ps-5">
+
+                  <h6 class="mb-0">Category</h6>
+
+                </div>
+                <div class="col-md-9 pe-5">
+
+                  <input type="text" name="genre_name" list="genre-list">
+                  <datalist id="genre-list">
+                    {% for genre in genres %}
+                    <option value="{{genre.name}}">{{genre.name}}</option>
+                    {% endfor %}
+                  </datalist>
+                    
+
+                </div>
               </div>
-            </div>
 
-            <hr class="mx-n3">
+              <hr class="mx-n3">
+              <div class="row align-items-center py-3">
+                <div class="col-md-3 ps-5">
 
-            <div class="row align-items-center py-3">
-              <div class="col-md-3 ps-5">
+                  <h6 class="mb-0">Pin</h6>
 
-                <h6 class="mb-0">Pin</h6>
+                </div>
+                <div class="col-md-9 pe-5">
 
+                  {{room_form.password}}
+
+                </div>
               </div>
-              <div class="col-md-9 pe-5">
 
-                {{room_form.password}}
+              <hr class="mx-n3">
 
+              <div class="row align-items-center py-3">
+                <div class="col-md-3 ps-5">
+
+                  <h6 class="mb-0">Bio</h6>
+
+                </div>
+                <div class="col-md-9 pe-5">
+
+                  {{room_form.description}}
+
+                </div>
               </div>
-            </div>
 
-            <hr class="mx-n3">
+              <hr class="mx-n3">
 
-            <div class="row align-items-center py-3">
-              <div class="col-md-3 ps-5">
-
-                <h6 class="mb-0">Bio</h6>
-
+              <div class="px-5 py-4">
+                <button type="submit" data-mdb-button-init data-mdb-ripple-init
+                  class="btn btn-secondary btn-lg">Submit</button>
               </div>
-              <div class="col-md-9 pe-5">
-
-                {{room_form.description}}
-
-              </div>
-            </div>
-
-            <hr class="mx-n3">
-
-            <div class="px-5 py-4">
-              <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-secondary btn-lg">Submit</button>
-            </div>
             </form>
           </div>
         </div>
@@ -67,12 +88,12 @@
 
         {%if room_form.errors %}
         <div class="alert alert-info alert-dismissable">
-            {% for field in room_form %}
-                {% if field.errors %}
-                <i class="fa fa-coffee"></i>
-                This is an <strong>{{field.label}} error</strong>{{ field.errors }}
-                {% endif %}
-            {% endfor %}
+          {% for field in room_form %}
+          {% if field.errors %}
+          <i class="fa fa-coffee"></i>
+          This is an <strong>{{field.label}} error</strong>{{ field.errors }}
+          {% endif %}
+          {% endfor %}
         </div>
         {% endif %}
 
