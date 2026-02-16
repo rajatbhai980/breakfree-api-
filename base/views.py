@@ -14,12 +14,17 @@ from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef
 from django.db.models.functions import TruncSecond
 from datetime import datetime
 from django.core.paginator import Paginator
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from .serializers import ProfilePageSerializer, HomePageSerializer, GenreSerializer
+from rest_framework.response import Response 
 
 
 #for getting the user model 
 User = get_user_model()
 
 # Create your views here.
+@api_view(['GET'])
 def home(request):
     if request.user.is_authenticated: 
         Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
@@ -42,10 +47,19 @@ def home(request):
         page_number = request.GET.get('page')
         pages = Paginator(rooms, 3)
         curr_page = pages.get_page(page_number)
-        context = {'curr_page': curr_page, 'genres': genres, 'genre_name': genre_name}
-    else: 
-        context = {}
-    return render(request, "base/home.html", context)
+        next_page = curr_page.next_page_number() if curr_page.has_next() else -1 
+        previous_page = curr_page.previous_page_number() if curr_page.has_previous() else -1 
+        data = {
+            "has_next": curr_page.has_next(), 
+            "has_previous": curr_page.has_previous(), 
+            "next_page_number": next_page, 
+            "previous_page_number": previous_page, 
+            "genres": genres, 
+            "genre_name": genre_name, 
+            "is_authenticated": request.user.is_authenticated
+        }
+        serializer = HomePageSerializer(data)
+    return Response(serializer.data)
 
 
 class Login(View): 
@@ -95,19 +109,27 @@ class Register(View):
         return render(request, "base/register.html", {'form': form})
     
 
-class Profile(View):
+class Profile(APIView):
     def get(self, request, pk, *args, **kwargs):
-        friend_count = Friend.objects.select_related('friend2').filter(friend1 = request.user).count()
-        user = User.objects.get(pk=pk) 
-        friends = user.friendModel.filter(
+        user = User.objects.get(pk=pk)
+        is_friend = user.friendModel.filter(
             friend2 = request.user
         ).exists()
         pending = PendingRequest.objects.filter(
             sender = request.user, 
             receiver = user
         ).exists()
-        context = {'profileUser':user, 'friends': friends, 'pending': pending, 'friendCount': friend_count}
-        return render(request, 'base/profile.html', context)
+        friend_count = Friend.objects.filter(friend1 = user).count()
+        user.is_friend = is_friend 
+        user.pending = pending 
+        user.friend_count = friend_count 
+
+        serializer = ProfilePageSerializer(user)
+        return Response(serializer.data)
+        # required things
+        # isfriend 
+        # pending 
+        
 
 
 class EditProfile(View): 

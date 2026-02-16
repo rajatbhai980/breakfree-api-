@@ -1,11 +1,12 @@
-from django.urls import path
+from django.urls import path, include
 from . import views 
+from rest_framework import routers
+
+
 urlpatterns = [
-    path('', views.home, name='home'),
     path('login/', views.Login.as_view(), name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('register/', views.Register.as_view(), name='register'),
-    path('profile/<int:pk>/', views.Profile.as_view(), name='profile'),
     path('edit_profile/<int:pk>/', views.EditProfile.as_view(), name='edit_profile'),
     path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
     path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
@@ -25,4 +26,8 @@ urlpatterns = [
     path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.addModerator, name='add_moderator'),
     path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.removeModerator, name='remove_moderator'), 
     path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.removeParticipant, name='remove_participant'), 
+
+    #REST API 
+    path('profile/<int:pk>/', views.Profile.as_view(), name='profile'),
+    path('', views.home, name='home'),
 ]
