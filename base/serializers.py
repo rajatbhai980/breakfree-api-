@@ -29,12 +29,20 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Genre
         fields = "__all__"
-        
+
+class RoomSerializer(serializers.ModelSerializer):
+    room_authenticated = serializers.BooleanField(required=False) 
+    class Meta: 
+        model = Room
+        fields = ['host', 'room_name', 'genre', 'participants', 'description', 'password', 'private', 'created', 'updated', 'room_authenticated']
+
 class HomePageSerializer(serializers.Serializer): 
     has_next = serializers.BooleanField()
     has_previous = serializers.BooleanField()
-    next_page_number = serializers.BooleanField()
-    previous_page_number = serializers.BooleanField()
+    next_page_number = serializers.IntegerField()
+    previous_page_number = serializers.IntegerField()
     genres = GenreSerializer(many=True)
     genre_name = serializers.CharField()
+    rooms = RoomSerializer(many=True)
     is_authenticated = serializers.BooleanField()
+

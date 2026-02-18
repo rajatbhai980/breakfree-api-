@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views import View
-from .forms import LoginModel, RegisterModel, EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
+from .forms import RegisterModel, EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -18,6 +18,7 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from .serializers import ProfilePageSerializer, HomePageSerializer, GenreSerializer
 from rest_framework.response import Response 
+from rest_framework import status
 
 
 #for getting the user model 
@@ -56,33 +57,19 @@ def home(request):
             "previous_page_number": previous_page, 
             "genres": genres, 
             "genre_name": genre_name, 
-            "is_authenticated": request.user.is_authenticated
+            "rooms": curr_page.object_list,
+            "is_authenticated": request.user.is_authenticated, 
         }
         serializer = HomePageSerializer(data)
-    return Response(serializer.data)
+        return Response(serializer.data)
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-
-class Login(View): 
+class Login(APIView): 
     def get(self, request, *args, **kwargs): 
-        login_form = LoginModel()
-        context = {'login_form': login_form}
-        return render(request, 'base/login.html', context)
-        # return render(request, "base/login.html", context)
+        pass        
 
     def post(self, request, *args, **kwargs): 
-        #adding validation 
-        form = LoginModel(data=request.POST)
-
-        if form.is_valid():
-            user = form.get_user()
-            if user is not None: 
-                login(request, user)
-                messages.success(request, 'You have been logged in')
-                return redirect('home')
-
-            form.add_error(None, 'Invalid Username or Password')
-        context = {'login_form': form}
-        return render(request, "base/login.html", context)
+        pass
 
 def logout_user(request): 
     logout(request)
