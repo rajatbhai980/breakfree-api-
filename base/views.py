@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views import View
-from .forms import RegisterModel, EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
+from .forms import EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,7 +16,7 @@ from datetime import datetime
 from django.core.paginator import Paginator
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from .serializers import ProfilePageSerializer, HomePageSerializer, GenreSerializer
+from .serializers import *
 from rest_framework.response import Response 
 from rest_framework import status
 
@@ -62,8 +62,17 @@ def home(request):
         }
         serializer = HomePageSerializer(data)
         return Response(serializer.data)
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+    return Response(status=status.HTTP_200_OK)
 
+class Register(APIView):  
+    def post(self, request, *args, **kwargs): 
+        regis_data = RegisterSerializer(data=request.data)
+        if regis_data.is_valid():
+            regis_data.save() 
+            return Response(regis_data.data, status=status.HTTP_201_CREATED)
+        else: 
+            return Response(regis_data.errors)
+        
 class Login(APIView): 
     def get(self, request, *args, **kwargs): 
         pass        
@@ -75,26 +84,6 @@ def logout_user(request):
     logout(request)
     messages.success(request, "You have sucessfully logged out!")
     return redirect('home')
-
-class Register(View): 
-    def get(self, request, *args, **kwargs): 
-        form = RegisterModel()
-        context = {'form': form}
-        return render(request, 'base/register.html', context)
-    def post(self, request, *args, **kwargs): 
-        form = RegisterModel(request.POST)
-        if form.is_valid(): 
-            form.save()
-            #for loggin in right after the register form is accepted 
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            user = authenticate(request, username=username, password=password)
-            if user is not None: 
-                login(request, user)
-                messages.success(request, "You have been registered")
-                return redirect("home")
-        return render(request, "base/register.html", {'form': form})
-    
 
 class Profile(APIView):
     def get(self, request, pk, *args, **kwargs):

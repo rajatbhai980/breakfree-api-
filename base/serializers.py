@@ -46,3 +46,21 @@ class HomePageSerializer(serializers.Serializer):
     rooms = RoomSerializer(many=True)
     is_authenticated = serializers.BooleanField()
 
+class RegisterSerializer(serializers.ModelSerializer): 
+    password2 = serializers.CharField()
+    class Meta: 
+        model = User
+        fields = ["username", "email", "password", "password2"]
+    
+    def validate(self, data): 
+        if data['password'] != data['password2']: 
+            raise serializers.ValidationError('Passwords dont match each other')
+        data.pop('password2')
+        return data 
+        
+    def create(self, validated_data): 
+        if User.objects.filter(username=validated_data['username']).exists(): 
+            raise serializers.ValidationError('User with that username already exists!')
+        user = User.objects.create_user(**validated_data)
+        user.save()
+        return user 

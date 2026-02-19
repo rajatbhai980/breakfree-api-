@@ -53,4 +53,9 @@ class TestHome(APITestCase):
 
         response = self.client.get(url, format='json', data={'genre': 'test_genre', 'page': 2})
         self.assertEqual(response.data['rooms'][0]['room_name'], 'test_7')
+    def test_unauthorizedacess(self): 
+        self.client.logout()
+        url = reverse('home')
+        response = self.client.get(url, format='json')
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
     #continue testing  
