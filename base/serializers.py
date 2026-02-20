@@ -47,18 +47,18 @@ class HomePageSerializer(serializers.Serializer):
     is_authenticated = serializers.BooleanField()
 
 class RegisterSerializer(serializers.ModelSerializer): 
-    password2 = serializers.CharField()
+    password2 = serializers.CharField(write_only=True)
     class Meta: 
         model = User
         fields = ["username", "email", "password", "password2"]
     
     def validate(self, data): 
         if data['password'] != data['password2']: 
-            raise serializers.ValidationError('Passwords dont match each other')
-        data.pop('password2')
+            raise serializers.ValidationError('Passwords must match each other')
         return data 
         
     def create(self, validated_data): 
+        validated_data.pop('password2')
         if User.objects.filter(username=validated_data['username']).exists(): 
             raise serializers.ValidationError('User with that username already exists!')
         user = User.objects.create_user(**validated_data)

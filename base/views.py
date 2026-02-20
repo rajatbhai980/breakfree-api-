@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 from .serializers import *
 from rest_framework.response import Response 
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken 
 
 
 #for getting the user model 
@@ -74,12 +75,18 @@ class Register(APIView):
             return Response(regis_data.errors)
         
 class Login(APIView): 
-    def get(self, request, *args, **kwargs): 
-        pass        
-
     def post(self, request, *args, **kwargs): 
-        pass
-
+        username = request.data['username']
+        password = request.data['password']
+        user = authenticate(username=username, password=password)
+        if user and user.check_password(password): 
+            token = RefreshToken.for_user(user)
+            return Response({
+                "acess_token": str(token.access_token), 
+                "refresh_token": str(token)
+            }, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
 def logout_user(request): 
     logout(request)
     messages.success(request, "You have sucessfully logged out!")
