@@ -4,7 +4,7 @@ from .models import Room, Genre
 from rest_framework import status 
 from django.urls import reverse 
 from .serializers import RoomSerializer
-import json 
+from rest_framework_simplejwt.tokens import AccessToken
 # Create your tests here.
 
 class TestHome(APITestCase): 
@@ -59,3 +59,97 @@ class TestHome(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(status.HTTP_200_OK, response.status_code)
     #continue testing  
+
+class TestRegister(APITestCase): 
+    def test_sucessful_registration(self): 
+        url = reverse('register')
+        data = {
+            "username": "sheetal", 
+            "email": "xetrikto@gmail.com", 
+            "password": "classicrider", 
+            "password2": "classicrider"
+        }
+        response = self.client.post(url, format='json', data=data)
+        created = User.objects.filter(username="sheetal").exists()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(created)
+        
+    def test_password_dont_match(self): 
+        url = reverse('register')
+        data = {
+            "username": "kapil", 
+            "email": "xetrikto@gmail.com", 
+            "password": "classicrider", 
+            "password2": "classicrides"
+        }
+        response = self.client.post(url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_no_email(self): 
+        url = reverse('register')
+        data = {
+            "username": "oggy", 
+            "email": "", 
+            "password": "classicrider", 
+            "password2": "classicrider"
+        }
+        response = self.client.post(url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_dublicate_user(self): 
+        url = reverse('register')
+        data1 = {
+            "username": "pranjal", 
+            "email": "din@gmail.com", 
+            "password": "classicrider", 
+            "password2": "classicrider"
+        }
+        data2 = {
+            "username": "pranjal", 
+            "email": "din@gmail.com", 
+            "password": "classicsinger", 
+            "password2": "classicsinger"
+        }
+        response = self.client.post(url, format='json', data=data1)
+        response2 = self.client.post(url, format='json', data=data2)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+
+class TestLogin(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username="pranjal", password="singer")
+        self.url = reverse('login')
+    def test_sucessful_login(self): 
+        data = {
+            "username": "pranjal", 
+            "password": "singer", 
+        }
+        response = self.client.post(self.url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    def test_wrong_password(self): 
+        data = {
+            "username": "pranjal", 
+            "password": "wrong_pass", 
+        }
+        response = self.client.post(self.url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_missing_username(self): 
+        data = {
+            "password": "singer", 
+        }
+        response = self.client.post(self.url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_token_structure(self): 
+        data = {
+            "username": "pranjal", 
+            "password": "singer", 
+        }
+        response = self.client.post(self.url, format='json', data=data)
+        self.assertIn('access_token', response.data)
+        self.assertIn('refresh_token', response.data)
+
+        token_obj = AccessToken(response.data['access_token'])
+        self.assertEqual(self.user.id, int(token_obj['user_id']))

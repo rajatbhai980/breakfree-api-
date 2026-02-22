@@ -72,26 +72,21 @@ class Register(APIView):
             regis_data.save() 
             return Response(regis_data.data, status=status.HTTP_201_CREATED)
         else: 
-            return Response(regis_data.errors)
+            return Response(regis_data.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class Login(APIView): 
     def post(self, request, *args, **kwargs): 
         username = request.data['username']
         password = request.data['password']
         user = authenticate(username=username, password=password)
-        if user and user.check_password(password): 
+        if user: 
             token = RefreshToken.for_user(user)
             return Response({
-                "acess_token": str(token.access_token), 
+                "access_token": str(token.access_token), 
                 "refresh_token": str(token)
             }, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     
-def logout_user(request): 
-    logout(request)
-    messages.success(request, "You have sucessfully logged out!")
-    return redirect('home')
-
 class Profile(APIView):
     def get(self, request, pk, *args, **kwargs):
         user = User.objects.get(pk=pk)

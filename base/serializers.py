@@ -50,12 +50,14 @@ class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
     class Meta: 
         model = User
-        fields = ["username", "email", "password", "password2"]
+        fields = ["username", "email", "password", "password2"]    
     
     def validate(self, data): 
         if data['password'] != data['password2']: 
             raise serializers.ValidationError('Passwords must match each other')
-        return data 
+        if data['email'] == "": 
+            raise serializers.ValidationError('Pl')
+        return data
         
     def create(self, validated_data): 
         validated_data.pop('password2')
