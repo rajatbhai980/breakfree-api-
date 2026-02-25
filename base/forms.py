@@ -4,17 +4,6 @@ from .models import Profile, Room
 
 User = get_user_model()
 
-
-class EditUser(ModelForm): 
-    class Meta: 
-        model = User
-        fields = ["first_name", "last_name", "email"]
-
-class EditUserProfile(ModelForm):
-    class Meta: 
-        model = Profile
-        fields = ["phone_no", "bio", "profile_pic"]
-
 class CreateRoomForm(ModelForm): 
     class Meta: 
         model = Room

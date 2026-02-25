@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views import View
-from .forms import EditUserProfile, EditUser, CreateRoomForm, RoomAuthorizationForm
+from .forms import CreateRoomForm, RoomAuthorizationForm
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -66,7 +66,7 @@ def home(request):
     return Response(status=status.HTTP_200_OK)
 
 class Register(APIView):  
-    def post(self, request, *args, **kwargs): 
+    def post(self, request): 
         regis_data = RegisterSerializer(data=request.data)
         if regis_data.is_valid():
             regis_data.save() 
@@ -75,9 +75,13 @@ class Register(APIView):
             return Response(regis_data.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class Login(APIView): 
-    def post(self, request, *args, **kwargs): 
-        username = request.data['username']
-        password = request.data['password']
+    '''
+        jwt token setup is ready but using rest session for development 
+        will use it after the project is done 
+    '''
+    def post(self, request): 
+        username = request.data.get('username')
+        password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user: 
             token = RefreshToken.for_user(user)
@@ -87,9 +91,10 @@ class Login(APIView):
             }, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
-class Profile(APIView):
-    def get(self, request, pk, *args, **kwargs):
-        user = User.objects.get(pk=pk)
+class ProfilePage(APIView):
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        profile = Profile.objects.get(user=user)
         is_friend = user.friendModel.filter(
             friend2 = request.user
         ).exists()
@@ -98,37 +103,45 @@ class Profile(APIView):
             receiver = user
         ).exists()
         friend_count = Friend.objects.filter(friend1 = user).count()
-        user.is_friend = is_friend 
-        user.pending = pending 
-        user.friend_count = friend_count 
+        profile.is_friend = is_friend 
+        profile.pending = pending 
+        profile.friend_count = friend_count 
+        serializer = ProfilePageSerailizer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serializer = ProfilePageSerializer(user)
-        return Response(serializer.data)
-        # required things
-        # isfriend 
-        # pending 
-        
+class EditProfile(APIView): 
+    def get(self, request): 
+        '''
+        Single Serializer instead of nested serializer 
+        Parent model handled by child serializer 
+        '''
+        if request.user.is_authenticated: 
+            profile = request.user.profile
+            serializer = EditProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
-class EditProfile(View): 
-    def get(self, request, pk, *args, **kwargs): 
-        profile = request.user.profile
-        user_form = EditUser(instance=request.user)
-        profile_form = EditUserProfile(instance=profile)
-        context = {'user_form': user_form, 'profile_form': profile_form}
-        return render(request, 'base/edit_profile.html', context)
-
-    def post(self, request, pk, *args, **kwargs):
-        profile = request.user.profile
-        user_form = EditUser(request.POST, instance=request.user)
-        profile_form = EditUserProfile(request.POST, request.FILES, instance=profile)
-
-        if user_form.is_valid() and profile_form.is_valid(): 
-            user_form.save()
-            profile_form.save()
-
-        context = {'user_form': user_form, 'profile_form': profile_form}
-        return render(request, 'base/edit_profile.html', context)
+    def patch(self, request):
+        '''
+        Nested Serailizer for keeping the logic explicit 
+        Simple and easier to handle debug 
+        '''
+        if request.user.is_authenticated: 
+            user_instance = User.objects.get(username=request.user)
+            profile_instance = Profile.objects.get(user=request.user)
+            user_serializer = UserSerializer(user_instance, data=request.data.get('user', {}), partial=True)
+            profile_serializer = MinimalProfileSerializer(profile_instance, data=request.data.get('profile', {}), partial=True)
+            if user_serializer.is_valid() and profile_serializer.is_valid(): 
+                user_serializer.save()
+                profile_serializer.save()
+                return Response(status=status.HTTP_200_OK)
+            else: 
+                errors = {}
+                errors.update(user_serializer.errors)
+                profile_serializer.is_valid()
+                errors.update(profile_serializer.errors)
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     
 class CreateRoom(LoginRequiredMixin, View): 
     login_url ='/login/'

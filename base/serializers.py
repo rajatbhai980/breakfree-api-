@@ -2,11 +2,6 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import * 
 
-class ProfileSerializer(serializers.ModelSerializer): 
-    class Meta: 
-        model = Profile
-        fields = "__all__"
-
 class FriendSerializer(serializers.ModelSerializer): 
     class Meta: 
         model = Friend
@@ -16,14 +11,28 @@ class PendingSerializer(serializers.ModelSerializer):
         model = PendingRequest
         fields = "__all__"
 
-class ProfilePageSerializer(serializers.ModelSerializer):
+class ProfileUserSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email"]
+
+class MinimalProfileSerializer(serializers.ModelSerializer): 
+    '''
+    this one is for showing some info for the profile page only 
+    unlike the full fields version which is for editing 
+    '''
+    class Meta: 
+        model = Profile 
+        fields = ["bio", "phone_no", "profile_pic"]
+
+class ProfilePageSerailizer(serializers.ModelSerializer): 
+    user = ProfileUserSerializer()
     friend_count = serializers.IntegerField()
     is_friend = serializers.BooleanField()
     pending = serializers.BooleanField()
     class Meta: 
-        model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "friend_count", 'is_friend', "pending"]
-
+        model = Profile
+        fields = ["user", "bio", "phone_no", "profile_pic", "friend_count", 'is_friend', "pending"]
 
 class GenreSerializer(serializers.ModelSerializer): 
     class Meta: 
@@ -64,5 +73,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(username=validated_data['username']).exists(): 
             raise serializers.ValidationError('User with that username already exists!')
         user = User.objects.create_user(**validated_data)
-        user.save()
         return user 
+
+class UserSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User
+        fields = ["username", "email"]
+
+class EditProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta: 
+        model = Profile
+        fields = ["user", "bio", "phone_no", "profile_pic"]
+
+
+    

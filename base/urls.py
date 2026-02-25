@@ -4,8 +4,6 @@ from rest_framework import routers
 
 
 urlpatterns = [
-    path('logout/', views.logout_user, name='logout'),
-    path('edit_profile/<int:pk>/', views.EditProfile.as_view(), name='edit_profile'),
     path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
     path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
     path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
@@ -26,8 +24,10 @@ urlpatterns = [
     path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.removeParticipant, name='remove_participant'), 
 
     #REST API 
-    path('profile/<int:pk>/', views.Profile.as_view(), name='profile'),
     path('', views.home, name='home'),
     path('register/', views.Register.as_view(), name='register'),
     path('login/', views.Login.as_view(), name='login'),
+    path('profile/<int:pk>/', views.ProfilePage.as_view(), name='profile'),
+    path('edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
+    
 ]
