@@ -143,40 +143,17 @@ class EditProfile(APIView):
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
-class CreateRoom(LoginRequiredMixin, View): 
-    login_url ='/login/'
-    def get(self, request, *args, **kwargs): 
-        room = Room(host=request.user)
-        room_form = CreateRoomForm(instance=room)
-        genres = Genre.objects.all()
-        context = {'room_form': room_form, 'genres': genres}
-        return render(request, "base/create_room.html", context)
-
+class CreateRoom(APIView): 
+    '''
+    from here look at serializer 
+    '''
     def post(self, request, *args, **kwargs):
-        post_data = request.POST.copy()
-        
-        genre_name = post_data.get('genre_name')
-        if genre_name: 
-            genre, created = Genre.objects.get_or_create(name=genre_name)
-            post_data['genre'] = genre
-        
-        room_form = CreateRoomForm(post_data)
-        genres = Genre.objects.all()
-        if room_form.is_valid():
-            room = room_form.save(commit=False)
-            room.host = request.user
-            password = room.password
-            if password: 
-                room.private = True
-            room.save()
-            room_pk = room.pk
-            messages.success(request, "You have created a room. ")
-            return redirect("room", pk=room_pk)
-            
-        context = {'room_form': room_form, 'genres': genres}
-        return render(request, "base/create_room.html", context)    
+        room_serializer = CreateRoomSerializer(data=request.data, context={'request': request})
+        if room_serializer.is_valid(): 
+            room_serializer.save()  
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(room_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    
 @login_required
 def room(request, pk):
     room_info = Room.objects.get(pk=pk) 

@@ -86,5 +86,24 @@ class EditProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ["user", "bio", "phone_no", "profile_pic"]
 
+class CreateRoomSerializer(serializers.ModelSerializer): 
+    host = serializers.PrimaryKeyRelatedField(queryset=User, default=serializers.CurrentUserDefault())
+    genre_name = serializers.CharField(allow_null=True, write_only=True)
+    class Meta: 
+        model = Room 
+        exclude = ["created", "updated", "participants"]
 
-    
+    def create(self, validated_data): 
+        genre_name = validated_data['genre_name']
+        password = validated_data['password']
+        if genre_name: 
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+        if password: 
+            validated_data['private'] = True 
+        validated_data.pop('genre_name')
+        room = Room.objects.create(**validated_data)
+        if genre_name: 
+            room.genre = genre  
+        room.participants.add(room.host)
+        room.save()
+        return room 

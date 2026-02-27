@@ -1,0 +1,10 @@
+create_room 
+    required fields = host, room_name genre_name participants description password private 
+    creates genre if available, if there is password then makes private, sets creator as host, adds creator as host
+
+{
+    "room_name": "Football", 
+    "genre_name": "sports", 
+    "description": "test",  
+    "password": "123"
+}

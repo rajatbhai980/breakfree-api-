@@ -23,11 +23,11 @@ class Genre(models.Model):
 
     def __str__(self): 
         return str(self.name)
-
+    
 class Room(models.Model): 
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room', null=True)
     room_name = models.CharField(max_length=50, unique=True)
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name='genre_room', null = True)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name='genre_room', blank=True, null=True)
     participants = models.ManyToManyField(User, related_name='joined_room')
     description = models.TextField(max_length=500, null=True, blank=True)
     password = models.CharField(max_length=50, blank=True, null=True, default='')

@@ -1,20 +1,20 @@
 <div align="center">
 
 # BreakFree
-This is a Habit Tracker website where you can add friends, make room and count days for anything you like. I am building this project because the leaderboard system with your friends who have similars goals can increase everyones determination and make it more videogame like sense of satisfaction. 
+This is a habit tracker api project that i converted from a djago project. So, what you do is, create rooms that you and your friends can see and than you can start the counter and leaderboard is there to show who has the longest streak. 
 </div>
 
 ### Cloning the repository
 
 --> Clone the repository using the command below :
 ```bash
-git clone https://github.com/rajatbhai980/breakfree.git
+git clone https://github.com/rajatbhai980/breakfree-api-.git
 
 ```
 
 --> Move into the directory where we have the project files : 
 ```bash
-cd breakfree
+cd breakfree-api
 
 ```
 
@@ -34,6 +34,20 @@ env\scripts\activate
 
 ```
  
+ --> Install the pip install -r requirements.txt 
+
+ --> create .env.local and paste the following (add your own secret key)
+ ```bash
+DEBUG = False
+SECRET_KEY = 'your secret key'
+ALLOWED_HOSTS = localhost,127.0.0.1,.railway.app 
+CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
+
+DATABASE_ENGINE='django.db.backends.sqlite3'
+DB_PATH=db.sqlite3
+
+```
+
 
 #
 

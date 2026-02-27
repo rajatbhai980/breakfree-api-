@@ -4,10 +4,6 @@ from rest_framework import routers
 
 
 urlpatterns = [
-    path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
-    path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
-    path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
-    path('room/<int:pk>/', views.room, name='room'),
     path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
     path('friend_requests/', views.friendRequest, name='friend_request'), 
     path('friend_request_rejected/<int:pk>/', views.friendRequestRejected, name='friend_request_rejected'), 
@@ -30,4 +26,8 @@ urlpatterns = [
     path('profile/<int:pk>/', views.ProfilePage.as_view(), name='profile'),
     path('edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
     
+    path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
+    path('room/<int:pk>/', views.room, name='room'),
+    path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
+    path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
 ]

@@ -3,3 +3,5 @@ __pycache__/
 .env
 .env*
 dockerpass.txt
+pg_service.conf
+my_pgpass

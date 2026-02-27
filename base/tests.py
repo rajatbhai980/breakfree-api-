@@ -236,4 +236,33 @@ class TestEditProfile(APITestCase):
         edit_response = self.client.patch(self.url, format='json')
         self.assertEqual(edit_response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-#refactor the test cases with yesterdays chatgpt 
+#test ideas for create room 
+class TestCreateRoom(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username="rajat", password="123456")
+        self.client.force_login(self.user)
+        self.url = reverse('create_room')
+        self.data = {
+    "room_name": "Football", 
+    "genre_name": "sports", 
+    "description": "test",  
+    "password": "123"
+        }       
+    def test_sucessful_creation_201(self): 
+        response = self.client.post(self.url, format='json', data=self.data)
+        room = Room.objects.get(room_name='Football')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual('Football', room.room_name)
+        self.assertEqual('sports', room.genre.name)
+        self.assertEqual('123', room.password)
+        participants = room.participants.all()
+        self.assertIn(self.user, participants)
+    
+    def test_dublicate_room_creation_400(self): 
+        Room.objects.create(room_name="Football")
+        response = self.client.post(self.url, format='json', data=self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_empty_room_name(self): 
+        response = self.client.post(self.url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
