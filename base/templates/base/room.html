@@ -26,10 +26,7 @@
                         </a>
                     </li>
                     {% if request.user == room.host %}
-                    <li>
-                        <a class="dropdown-item" href="{% url 'update_room' room.pk %}">
-                            Edit Room
-                        </a>
+
                         
                     </li>
                     <li><hr class="dropdown-divider"></li>

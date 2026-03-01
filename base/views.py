@@ -10,7 +10,7 @@ from django.contrib import messages
 from .models import Room, Friend, PendingRequest, Counter, Genre
 from itertools import groupby
 from django.utils import timezone
-from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef
+from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef, Count
 from django.db.models.functions import TruncSecond
 from datetime import datetime
 from django.core.paginator import Paginator
@@ -123,7 +123,7 @@ class EditProfile(APIView):
 
     def patch(self, request):
         '''
-        Nested Serailizer for keeping the logic explicit 
+        Seperate Serializer to keep logic explicit 
         Simple and easier to handle debug 
         '''
         if request.user.is_authenticated: 
@@ -154,21 +154,35 @@ class CreateRoom(APIView):
             return Response(status=status.HTTP_201_CREATED)
         return Response(room_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
 @login_required
 def room(request, pk):
-    room_info = Room.objects.get(pk=pk) 
-    room_info.participants.add(request.user)
-    participants = room_info.participants.all()
+    '''
+    return's Rooms information 
+    counting - a boolean value to show start or stop button for the current user
+    leaderboard showing user and their timesince they started the counter  
+    participants - those who have entered the room 
+    '''
     login_url = '/login/'
+    room_info = Room.objects.get(pk=pk) 
+    participants = room_info.participants.all()
     room_counts = Counter.objects.select_related(
         "user").filter(
             room=room_info).annotate(
                 raw_timesince=ExpressionWrapper(
-                    (timezone.now() - F('created_at')), output_field=fields.DurationField())).order_by('-raw_timesince')[:10]
+                    (timezone.now() - F('created_at')), output_field=fields.DurationField()), rank=Count('user', distinct=True)).order_by('-raw_timesince')[:10]
     
     counting = Counter.objects.filter(user=request.user, room=room_info).exists()
-    context = {'room': room_info, 'participants': participants, 'counting': counting, 'room_counts': enumerate(room_counts, 1)}
-    return render(request, 'base/room.html', context)
+    data = {
+        'room_info': room_info, 
+        'participants': participants, 
+        'leaderboard': room_counts, 
+        'counting': counting 
+    }
+
+    serializers = NestedRoomSerializer(data)
+    return Response(serializers.data, status=status.HTTP_200_OK)
+
 # optimize the n + 1 problem every where
 
 class UpdateRoom(LoginRequiredMixin, View): 

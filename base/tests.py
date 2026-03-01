@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from .models import Room, Genre, Friend, PendingRequest
+from .models import *
 from rest_framework import status 
 from django.urls import reverse 
 from .serializers import RoomSerializer
@@ -239,7 +239,7 @@ class TestEditProfile(APITestCase):
 #test ideas for create room 
 class TestCreateRoom(APITestCase): 
     def setUp(self): 
-        self.user = User.objects.create_user(username="rajat", password="123456")
+        self.user = User.objects.create_user(username="rajat", password="PlaysApex123@")
         self.client.force_login(self.user)
         self.url = reverse('create_room')
         self.data = {
@@ -264,5 +264,46 @@ class TestCreateRoom(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_empty_room_name(self): 
-        response = self.client.post(self.url, format='json')
+        response = self.client.post(self.url, format='json', data={})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_without_genre_name_and_password(self): 
+        response = self.client.post(self.url, format='json', data={'room_name': 'test2'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+#test for reading room 
+class TestReadRoom(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username="rajat", password="GenshinImpact123@")
+        self.client.force_authenticate(self.user)
+        create_url = reverse('create_room')
+        self.client.post(create_url, format='json', data={'room_name': 'test', 'description': 'this is for test'})
+        self.url = reverse('room', kwargs={'pk': 1})
+        self.room = Room.objects.get(pk=1)
+    
+    def test_valid_room_info(self): 
+        response = self.client.get(self.url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['room_info']['room_name'], 'test')
+        self.assertEqual(response.data['room_info']['description'], 'this is for test')
+    
+    def test_correct_pariticipants(self): 
+        response = self.client.get(self.url, format='json')
+        self.assertIn('rajat', response.data['participants'][0].values())
+        new_paricipant = User.objects.create_user(username="pranjal", password="AdamBhaijan!223")
+        self.room.participants.add(new_paricipant)
+        response = self.client.get(self.url, format='json')
+        self.assertIn('pranjal', response.data['participants'][1].values())
+    
+    def test_room_count(self): 
+        Counter.objects.create(user=self.user, room=self.room)
+        response = self.client.get(self.url, format='json')
+        self.assertTrue(response.data['counting'])
+    
+    def test_leaderboard_sorting(self):
+        Counter.objects.create(user=self.user, room=self.room)
+        new_user = User.objects.create_user(username="pranjal", password="IlDottore123$")
+        Counter.objects.create(user=new_user, room=self.room)
+        response = self.client.get(self.url, format='json')
+        self.assertEqual(response.data['leaderboard'][0]['user']['username'], 'rajat')
+        self.assertEqual(response.data['leaderboard'][1]['user']['username'], 'pranjal')

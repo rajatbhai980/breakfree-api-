@@ -88,22 +88,48 @@ class EditProfileSerializer(serializers.ModelSerializer):
 
 class CreateRoomSerializer(serializers.ModelSerializer): 
     host = serializers.PrimaryKeyRelatedField(queryset=User, default=serializers.CurrentUserDefault())
-    genre_name = serializers.CharField(allow_null=True, write_only=True)
+    genre_name = serializers.CharField(write_only=True, allow_blank=True, required=False)
     class Meta: 
         model = Room 
         exclude = ["created", "updated", "participants"]
 
     def create(self, validated_data): 
-        genre_name = validated_data['genre_name']
-        password = validated_data['password']
-        if genre_name: 
-            genre, created = Genre.objects.get_or_create(name=genre_name)
-        if password: 
+        has_genre = 'genre_name' in validated_data
+        if has_genre: 
+            genre, created = Genre.objects.get_or_create(name=validated_data['genre_name'])
+            validated_data.pop('genre_name')
+        if 'password' in validated_data: 
             validated_data['private'] = True 
-        validated_data.pop('genre_name')
         room = Room.objects.create(**validated_data)
-        if genre_name: 
+        if has_genre: 
             room.genre = genre  
         room.participants.add(room.host)
         room.save()
         return room 
+    
+#serializers for reading rooms 
+class ReadRoomSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = Room
+        fields = ['room_name', 'description']
+
+    
+class ReadRoomUsersSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User
+        fields = ['id', 'username']
+
+class LeaderBoardSerializer(serializers.ModelSerializer): 
+    rank = serializers.IntegerField()
+    user = ReadRoomUsersSerializer()
+    raw_timesince = serializers.DurationField()
+    class Meta: 
+        model = Counter
+        fields = ['rank', 'user', 'raw_timesince']
+
+class NestedRoomSerializer(serializers.Serializer): 
+    room_info = ReadRoomSerializer()
+    participants = ReadRoomUsersSerializer(many=True)
+    leaderboard = LeaderBoardSerializer(many=True)
+    counting = serializers.BooleanField()
+

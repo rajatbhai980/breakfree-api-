@@ -10,7 +10,7 @@
         <!-- Login or register  -->
          {% if request.user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{% url 'logout' %}">Logout</a>  
+  
         </li>
         {% else %}
         <li class="nav-item">
@@ -46,9 +46,9 @@
             <!-- show profile when needed  -->
             <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Profile</a></li>
             
-            <li><a class="dropdown-item" href="{% url 'edit_profile' request.user.pk %}">Edit Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
+
           </ul>
         </li>
         {% endif %}

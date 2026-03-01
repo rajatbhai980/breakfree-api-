@@ -1,0 +1,2 @@
+Some Models Serializer are redudandant with different fields to include depending on condition 
+Still avoided creating new dynamic serializer and overwriting the constructor method to make code more readable and maintainable
