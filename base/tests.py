@@ -241,7 +241,7 @@ class TestCreateRoom(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="PlaysApex123@")
         self.client.force_login(self.user)
-        self.url = reverse('create_room')
+        self.url = reverse('room_viewset-list')
         self.data = {
     "room_name": "Football", 
     "genre_name": "sports", 
@@ -276,7 +276,7 @@ class TestReadRoom(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="GenshinImpact123@")
         self.client.force_authenticate(self.user)
-        create_url = reverse('create_room')
+        create_url = reverse('room_viewset-list')
         self.client.post(create_url, format='json', data={'room_name': 'test', 'description': 'this is for test'})
         self.url = reverse('room', kwargs={'pk': 1})
         self.room = Room.objects.get(pk=1)
@@ -307,3 +307,43 @@ class TestReadRoom(APITestCase):
         response = self.client.get(self.url, format='json')
         self.assertEqual(response.data['leaderboard'][0]['user']['username'], 'rajat')
         self.assertEqual(response.data['leaderboard'][1]['user']['username'], 'pranjal')
+
+class TestUpdateRoom(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username="rajat", password="TimeFlies!324")
+        self.client.force_login(self.user)
+        self.client.post(reverse('room_viewset-list'), format='json', data={"room_name": "test"})
+        self.room = Room.objects.get(pk=1)
+        self.url = reverse('room_viewset-detail', kwargs = {'pk': 1})
+
+    def test_fetch_correct_info(self):
+        response = self.client.get(self.url, format='json')
+        self.assertEqual(response.data['room_name'], 'test')
+    
+    def test_update_200(self):
+        data = {
+            "room_name": "test_changed_name"
+        }
+        
+        self.client.post(self.url, format='json', data=data)
+        response = self.client.get(self.url, format='json')
+        self.assertEqual(response.data['room_name'], 'test_changed_name')
+    
+    def test_genre_creation(self): 
+        data = {
+            "room_name": "test", 
+            "genre_name": "test"
+            }
+        self.client.post(self.url, format='json', data=data)
+        genre_created = Genre.objects.filter(pk=1).exists()
+        self.assertTrue(genre_created)
+    
+    def test_auto_privatization(self): 
+        data = {
+            "room_name": "test", 
+            "password": "1234"
+            }
+    
+        self.client.post(self.url, format='json', data=data)
+        self.assertTrue(self.room.private)
+    

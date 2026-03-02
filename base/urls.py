@@ -1,6 +1,10 @@
 from django.urls import path, include
 from . import views 
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'view_all_genre', views.ViewAllGenre, basename='view_all_genre')
+router.register(r'room_viewset', views.RoomViewSet, basename="room_viewset")
 
 
 urlpatterns = [
@@ -25,9 +29,10 @@ urlpatterns = [
     path('login/', views.Login.as_view(), name='login'),
     path('profile/<int:pk>/', views.ProfilePage.as_view(), name='profile'),
     path('edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
-    
-    path('create_room/', views.CreateRoom.as_view(), name='create_room'), 
+
+
     path('room/<int:pk>/', views.room, name='room'),
     path('update_room/<int:pk>/', views.UpdateRoom.as_view(), name='update_room'), 
     path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
+    path('', include(router.urls))
 ]

@@ -39,7 +39,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = "__all__"
 
-class RoomSerializer(serializers.ModelSerializer):
+class AllRoomsSerializer(serializers.ModelSerializer):
     room_authenticated = serializers.BooleanField(required=False) 
     class Meta: 
         model = Room
@@ -52,7 +52,7 @@ class HomePageSerializer(serializers.Serializer):
     previous_page_number = serializers.IntegerField()
     genres = GenreSerializer(many=True)
     genre_name = serializers.CharField()
-    rooms = RoomSerializer(many=True)
+    rooms = AllRoomsSerializer(many=True)
     is_authenticated = serializers.BooleanField()
 
 class RegisterSerializer(serializers.ModelSerializer): 
@@ -86,8 +86,8 @@ class EditProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ["user", "bio", "phone_no", "profile_pic"]
 
-class CreateRoomSerializer(serializers.ModelSerializer): 
-    host = serializers.PrimaryKeyRelatedField(queryset=User, default=serializers.CurrentUserDefault())
+class RoomSerializer(serializers.ModelSerializer): 
+    host = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
     genre_name = serializers.CharField(write_only=True, allow_blank=True, required=False)
     class Meta: 
         model = Room 

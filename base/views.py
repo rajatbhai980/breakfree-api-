@@ -18,7 +18,7 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from .serializers import *
 from rest_framework.response import Response 
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken 
 
 
@@ -143,16 +143,14 @@ class EditProfile(APIView):
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
-class CreateRoom(APIView): 
+class RoomViewSet(viewsets.ModelViewSet): 
     '''
-    from here look at serializer 
+    All of the room method are here 
+
     '''
-    def post(self, request, *args, **kwargs):
-        room_serializer = CreateRoomSerializer(data=request.data, context={'request': request})
-        if room_serializer.is_valid(): 
-            room_serializer.save()  
-            return Response(status=status.HTTP_201_CREATED)
-        return Response(room_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+
 
 @api_view(['GET'])
 @login_required
@@ -183,17 +181,15 @@ def room(request, pk):
     serializers = NestedRoomSerializer(data)
     return Response(serializers.data, status=status.HTTP_200_OK)
 
-# optimize the n + 1 problem every where
-
 class UpdateRoom(LoginRequiredMixin, View): 
     login_url ='/login/'
     def get(self, request,  pk, *args, **kwargs): 
-        room = Room.objects.select_related('genre').get(pk=pk)
+        room = Room.objects.get(pk=pk)
         UpdateRoom = CreateRoomForm(instance=room)
         genres = Genre.objects.all()
         context = {'update_form': UpdateRoom, 'genres': genres, 'room': room}
         return render(request, 'base/update_room.html', context)   
-    def post(self, request, pk, *args, **kwargs): 
+    def post(self, request, pk): 
         room = Room.objects.select_related('genre').get(pk=pk)
         post_data = request.POST.copy()
 
@@ -223,7 +219,10 @@ def DeleteRoom(request, pk):
     room.delete()
     messages.success(request, f"{room_name} room has been deleted" ) 
     return redirect('home')
-    
+
+class ViewAllGenre(viewsets.ReadOnlyModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
 
 class SearchFriend(View): 
     def get(self, request, *args, **kwargs): 
