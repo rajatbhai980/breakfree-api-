@@ -208,9 +208,8 @@ class TestEditProfile(APITestCase):
         edit_response = self.client.patch(self.url, format='json', data=data)
         profile_page_response = self.client.get(profile_url, format='json')
         self.assertEqual(edit_response.status_code, status.HTTP_200_OK)
-        print(profile_page_response.data)
         self.assertEqual(profile_page_response.data['user']['username'], "evolved_rajat")
-        self.assertEqual(profile_page_response.data['profile']['bio'], "anime watching machine")
+        self.assertEqual(profile_page_response.data['bio'], "anime watching machine")
     
     def test_empty_body_200(self):
         edit_response = self.client.patch(self.url, format='json')

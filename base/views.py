@@ -183,13 +183,6 @@ def room(request, pk):
 
     serializers = NestedRoomSerializer(data)
     return Response(serializers.data, status=status.HTTP_200_OK)
-    
-def DeleteRoom(request, pk):
-    room = Room.objects.get(pk=pk)
-    room_name = room.room_name
-    room.delete()
-    messages.success(request, f"{room_name} room has been deleted" ) 
-    return redirect('home')
 
 class ViewAllGenre(viewsets.ReadOnlyModelViewSet):
     queryset = Genre.objects.all()

@@ -32,6 +32,5 @@ urlpatterns = [
 
 
     path('room/<int:pk>/', views.room, name='room'),
-    path('delete_room/<int:pk>/', views.DeleteRoom, name='delete_room'), 
     path('', include(router.urls))
 ]
