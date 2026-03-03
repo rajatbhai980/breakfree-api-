@@ -313,7 +313,6 @@ class TestUpdateRoom(APITestCase):
         self.user = User.objects.create_user(username="rajat", password="TimeFlies!324")
         self.client.force_login(self.user)
         self.client.post(reverse('room_viewset-list'), format='json', data={"room_name": "test"})
-        self.room = Room.objects.get(pk=1)
         self.url = reverse('room_viewset-detail', kwargs = {'pk': 1})
 
     def test_fetch_correct_info(self):
@@ -325,7 +324,7 @@ class TestUpdateRoom(APITestCase):
             "room_name": "test_changed_name"
         }
         
-        self.client.post(self.url, format='json', data=data)
+        self.client.patch(self.url, format='json', data=data)
         response = self.client.get(self.url, format='json')
         self.assertEqual(response.data['room_name'], 'test_changed_name')
     
@@ -334,7 +333,7 @@ class TestUpdateRoom(APITestCase):
             "room_name": "test", 
             "genre_name": "test"
             }
-        self.client.post(self.url, format='json', data=data)
+        self.client.patch(self.url, format='json', data=data)
         genre_created = Genre.objects.filter(pk=1).exists()
         self.assertTrue(genre_created)
     
@@ -344,6 +343,19 @@ class TestUpdateRoom(APITestCase):
             "password": "1234"
             }
     
-        self.client.post(self.url, format='json', data=data)
-        self.assertTrue(self.room.private)
+        self.client.patch(self.url, format='json', data=data)
+        room = Room.objects.get(pk=1)
+        self.assertTrue(room.private)
     
+class TestDeleteRoom(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username="rajat", password="LikeaBrandnewperson123@")
+        self.client.force_login(self.user)
+        Room.objects.create(room_name="test", host=self.user)
+        self.url = reverse('room_viewset-detail', kwargs={'pk': 1})
+    
+    def test_delete_own_room(self): 
+        response = self.client.delete(self.url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        room = Room.objects.filter(pk=1).exists()
+        self.assertFalse(room)

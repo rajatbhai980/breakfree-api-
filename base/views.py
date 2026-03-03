@@ -145,8 +145,11 @@ class EditProfile(APIView):
     
 class RoomViewSet(viewsets.ModelViewSet): 
     '''
-    All of the room method are here 
-
+    All of the room method are here
+    Create Room - get without pk 
+    Update Room - patch with pk 
+    !!! if you try patch using drf its gonna prefill some fields
+    like genre, private it will contradict our business logic 
     '''
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
@@ -180,38 +183,6 @@ def room(request, pk):
 
     serializers = NestedRoomSerializer(data)
     return Response(serializers.data, status=status.HTTP_200_OK)
-
-class UpdateRoom(LoginRequiredMixin, View): 
-    login_url ='/login/'
-    def get(self, request,  pk, *args, **kwargs): 
-        room = Room.objects.get(pk=pk)
-        UpdateRoom = CreateRoomForm(instance=room)
-        genres = Genre.objects.all()
-        context = {'update_form': UpdateRoom, 'genres': genres, 'room': room}
-        return render(request, 'base/update_room.html', context)   
-    def post(self, request, pk): 
-        room = Room.objects.select_related('genre').get(pk=pk)
-        post_data = request.POST.copy()
-
-        genre_name = post_data.get('genre_name')
-        if genre_name: 
-            genre, created = Genre.objects.get_or_create(name=genre_name)
-            post_data['genre'] = genre
-        
-        UpdateForm = CreateRoomForm(post_data, instance=room)
-        if UpdateForm.is_valid(): 
-            form = UpdateForm.save(commit=False)
-            if form.password: 
-                room.private = True
-            else:
-                room.private = False
-            form.save()
-
-            messages.success(request, "Room sucessfully updated!")
-            return redirect('room', pk=pk)
-        genres = Genre.objects.all()
-        context = {'update_form': UpdateForm, 'genres': genres, 'room': room}
-        return render(request, 'base/update_room.html', context) 
     
 def DeleteRoom(request, pk):
     room = Room.objects.get(pk=pk)

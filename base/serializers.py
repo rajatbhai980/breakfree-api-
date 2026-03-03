@@ -94,18 +94,31 @@ class RoomSerializer(serializers.ModelSerializer):
         exclude = ["created", "updated", "participants"]
 
     def create(self, validated_data): 
-        has_genre = 'genre_name' in validated_data
-        if has_genre: 
-            genre, created = Genre.objects.get_or_create(name=validated_data['genre_name'])
-            validated_data.pop('genre_name')
+        genre_name = validated_data.pop('genre_name', None)
         if 'password' in validated_data: 
             validated_data['private'] = True 
+        
         room = Room.objects.create(**validated_data)
-        if has_genre: 
-            room.genre = genre  
+        
+        if genre_name: 
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+            room.genre = genre
         room.participants.add(room.host)
         room.save()
         return room 
+
+    def update(self, instance, validated_data): 
+        genre_name = validated_data.pop('genre_name', None)
+        if genre_name: 
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+            instance.genre = genre
+        instance.private = True if 'password' in validated_data else False
+        for attr, value in validated_data.items(): 
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance 
+
     
 #serializers for reading rooms 
 class ReadRoomSerializer(serializers.ModelSerializer): 
