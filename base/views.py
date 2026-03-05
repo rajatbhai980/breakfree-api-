@@ -188,39 +188,30 @@ class ViewAllGenre(viewsets.ReadOnlyModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
-class SearchFriend(View): 
-    def get(self, request, *args, **kwargs): 
-        search_result = request.GET.get('q')
-        if search_result: 
-            results = User.objects.filter(username__icontains=search_result)
-        else: 
-            results = []
-        pagination = Paginator(results, 2)
-        pagenumber = request.GET.get('page')
-        users = pagination.get_page(pagenumber)
-        context = {'search_results': enumerate(users, 1), 'results': users, 'query': search_result}
-        return render(request, 'base/search_friend.html', context)
-    
-
-def friendRequest(request): 
-    pending_receiver_requests = PendingRequest.objects.select_related('sender').filter(receiver = request.user)
-    requests = []
-    for pending_receiver_request in pending_receiver_requests: 
-        requests.append(pending_receiver_request.sender)
-    context = {'pending_requests': enumerate(requests, start=1)}
-    return render(request, 'base/friend_request.html', context)
-
-def createFriendRequest(request, pk): 
+'''
+    Friend request 
+'''
+@api_view(['POST'])
+def create_friend_request(request, pk): 
     sender = request.user
     receiver = User.objects.get(pk=pk)
     PendingRequest.objects.create(
         sender = sender, 
         receiver = receiver
     )
-    messages.success(request, "Friend Request Sent! ")
-    return redirect('profile', pk=pk)
-    
-def addFriend(request, pk): 
+    return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def view_friend_request(request): 
+    pending_receiver_requests = PendingRequest.objects.select_related('sender').filter(receiver = request.user)
+    requests = []
+    for pending_receiver_request in pending_receiver_requests: 
+        requests.append(pending_receiver_request.sender)
+    serializer = PendingRequestSerializer(requests, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST']) 
+def accept_friend_request(request, pk): 
     sender = User.objects.get(pk=pk)
     #a to be relation 
     Friend.objects.create(
@@ -234,25 +225,46 @@ def addFriend(request, pk):
 
     pending_row = sender.friendRequestFrom.get(receiver=request.user)
     pending_row.delete()
-    messages.success(request, 'Sucessfully added a Friend! ')
-    return redirect('friend_request')
+    return Response(status=status.HTTP_200_OK)
 
-def friendRequestRejected(request, pk): 
+@api_view(['POST']) 
+def reject_friend_request(request, pk): 
     Sender = User.objects.get(pk = pk)
     pending_row = Sender.friendRequestFrom.get(receiver=request.user)
     pending_row.delete()
     messages.success(request, 'Request Deleted!')
-    return redirect('friend_request')
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['POST'])
+def remove_friend(request, pk): 
+    friend = User.objects.get(pk=pk)
+    friend_rows = Friend.objects.filter(Q(friend1=friend, friend2=request.user)| Q(friend1=request.user, friend2=friend)) 
+    friend_rows.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
-def displayFriendList(request): 
+@api_view(['GET'])
+def view_friend_list(request): 
     Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
     friendList = []
     for friendRow in Friends: 
         friendList.append(friendRow.friend2)
-    context = {'friendList': friendList}
-    return render(request, 'base/friend_list.html', context)
+    serializer = FriendListSerializer(friendList, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
+class SearchFriend(View): 
+    def get(self, request, *args, **kwargs): 
+        '''
+            returns query 
+        '''
+        search_result = request.GET.get('q')
+        if search_result: 
+            results = User.objects.filter(username__icontains=search_result)
+        else: 
+            results = []
+        pagination = Paginator(results, 2)
+        pagenumber = request.GET.get('page')
+        users = pagination.get_page(pagenumber)
+        context = {'search_results': enumerate(users, 1), 'results': users, 'query': search_result}    
 
 def startCounter(request, pk): 
     Counter.objects.create(

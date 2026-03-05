@@ -8,12 +8,6 @@ router.register(r'room_viewset', views.RoomViewSet, basename="room_viewset")
 
 
 urlpatterns = [
-    path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
-    path('friend_requests/', views.friendRequest, name='friend_request'), 
-    path('friend_request_rejected/<int:pk>/', views.friendRequestRejected, name='friend_request_rejected'), 
-    path('add_friend/<int:pk>/', views.addFriend, name='add_friend'),
-    path('send_friend_request/<int:pk>/', views.createFriendRequest, name='send_request'), 
-    path('friend_list/', views.displayFriendList, name='friend_list'), 
     path('start_counter/<int:pk>/', views.startCounter, name='start_counter'),
     path('stop_counter/<int:pk>/', views.stopCounter, name='stop_counter'),
     path('leaderboard/<int:pk>/', views.leaderboard, name='leaderboard'), 
@@ -29,8 +23,14 @@ urlpatterns = [
     path('login/', views.Login.as_view(), name='login'),
     path('profile/<int:pk>/', views.ProfilePage.as_view(), name='profile'),
     path('edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
-
-
     path('room/<int:pk>/', views.room, name='room'),
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('create_friend_request/<int:pk>/', views.create_friend_request, name='create_friend_request'),
+    path('view_friend_requests/', views.view_friend_request, name='view_friend_requests'),
+    path('accept_friend_request/<int:pk>/', views.accept_friend_request, name='accept_friend_request'),
+    path('reject_friend_request/<int:pk>/', views.reject_friend_request, name='reject_friend_request'), 
+    path('remove_friend/<int:pk>/', views.remove_friend, name='remove_friend'),
+
+    path('friend_list/', views.view_friend_list, name='friend_list'),
+    path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
 ]

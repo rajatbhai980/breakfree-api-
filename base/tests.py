@@ -275,10 +275,8 @@ class TestReadRoom(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="GenshinImpact123@")
         self.client.force_authenticate(self.user)
-        create_url = reverse('room_viewset-list')
-        self.client.post(create_url, format='json', data={'room_name': 'test', 'description': 'this is for test'})
-        self.url = reverse('room', kwargs={'pk': 1})
-        self.room = Room.objects.get(pk=1)
+        self.room = Room.objects.create(host=self.user, room_name="test", description='this is for test')
+        self.url = reverse('room', kwargs={'pk': self.room.pk})
     
     def test_valid_room_info(self): 
         response = self.client.get(self.url, format='json')
@@ -287,6 +285,10 @@ class TestReadRoom(APITestCase):
         self.assertEqual(response.data['room_info']['description'], 'this is for test')
     
     def test_correct_pariticipants(self): 
+        '''
+            adding self to the participant automatically, is tested in CreateRoomTest
+        '''
+        self.room.participants.add(self.user)
         response = self.client.get(self.url, format='json')
         self.assertIn('rajat', response.data['participants'][0].values())
         new_paricipant = User.objects.create_user(username="pranjal", password="AdamBhaijan!223")
@@ -311,8 +313,8 @@ class TestUpdateRoom(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="TimeFlies!324")
         self.client.force_login(self.user)
-        self.client.post(reverse('room_viewset-list'), format='json', data={"room_name": "test"})
-        self.url = reverse('room_viewset-detail', kwargs = {'pk': 1})
+        self.room = Room.objects.create(room_name="test")
+        self.url = reverse('room_viewset-detail', kwargs = {'pk': self.room.pk})
 
     def test_fetch_correct_info(self):
         response = self.client.get(self.url, format='json')
@@ -350,11 +352,67 @@ class TestDeleteRoom(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="LikeaBrandnewperson123@")
         self.client.force_login(self.user)
-        Room.objects.create(room_name="test", host=self.user)
-        self.url = reverse('room_viewset-detail', kwargs={'pk': 1})
+        self.room = Room.objects.create(room_name="test", host=self.user)
+        self.url = reverse('room_viewset-detail', kwargs={'pk': self.room.pk})
     
     def test_delete_own_room(self): 
         response = self.client.delete(self.url, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         room = Room.objects.filter(pk=1).exists()
         self.assertFalse(room)
+
+class TestFriendRequestSystem(APITestCase): 
+    def setUp(self):
+        self.user = User.objects.create_user(username="rajat", password="Genshinplayers234#")
+        self.second_user = User.objects.create_user(username="ayush", password="guffadiboy1234#$")
+        self.client.force_login(self.user)
+    
+    def test_create_friend_request_201(self): 
+        url = reverse('create_friend_request', kwargs={'pk': self.second_user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        request_sent = PendingRequest.objects.filter(sender=self.user, receiver=self.second_user).exists()
+        self.assertTrue(request_sent)
+
+    def test_view_friend_requests_200(self):
+        PendingRequest.objects.create(sender=self.second_user, receiver=self.user)
+        url = reverse('view_friend_requests')
+        response = self.client.get(url, format='json')
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual('ayush', response.data[0]['username'])
+
+    def test_accept_friend_request_200(self): 
+        PendingRequest.objects.create(sender=self.second_user, receiver=self.user)
+        url = reverse('accept_friend_request', kwargs={'pk': self.second_user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        accepted = Friend.objects.filter(friend1=self.user, friend2=self.second_user).exists()
+        self.assertTrue(accepted)
+
+    def test_reject_friend_request_204(self): 
+        PendingRequest.objects.create(sender=self.second_user, receiver=self.user)
+        url = reverse('reject_friend_request', kwargs={'pk': self.second_user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        exists = PendingRequest.objects.filter(sender=self.second_user, receiver=self.user).exists()
+        self.assertFalse(exists)
+
+    def test_remove_friend_request_204(self): 
+        Friend.objects.create(friend1=self.user, friend2=self.second_user)
+        Friend.objects.create(friend1=self.second_user, friend2=self.user)
+        url = reverse('remove_friend', kwargs={'pk': self.second_user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        exists = Friend.objects.filter(friend1=self.user, friend2=self.second_user).exists()
+        self.assertFalse(exists)
+    
+    def test_view_friend_list_200(self): 
+        Friend.objects.create(friend1=self.user, friend2=self.second_user)
+        Friend.objects.create(friend1=self.second_user, friend2=self.user)
+        another_friend = User.objects.create(username="yobey", password="playboy123@12")
+        Friend.objects.create(friend1=self.user, friend2=another_friend)
+        Friend.objects.create(friend1=another_friend, friend2=self.user)
+        url=reverse('friend_list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[1]['username'], another_friend.username)

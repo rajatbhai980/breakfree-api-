@@ -146,3 +146,12 @@ class NestedRoomSerializer(serializers.Serializer):
     leaderboard = LeaderBoardSerializer(many=True)
     counting = serializers.BooleanField()
 
+class PendingRequestSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User 
+        fields = ['id', 'username', 'first_name', 'last_name']
+
+class FriendListSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User 
+        fields = ['id', 'username', 'first_name', 'last_name']
