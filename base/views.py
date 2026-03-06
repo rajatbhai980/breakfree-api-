@@ -20,6 +20,8 @@ from .serializers import *
 from rest_framework.response import Response 
 from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken 
+from .pagination import SearchResultPaginator
+from rest_framework.generics import ListAPIView
 
 
 #for getting the user model 
@@ -251,20 +253,16 @@ def view_friend_list(request):
     serializer = FriendListSerializer(friendList, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-class SearchFriend(View): 
-    def get(self, request, *args, **kwargs): 
-        '''
-            returns query 
-        '''
-        search_result = request.GET.get('q')
-        if search_result: 
-            results = User.objects.filter(username__icontains=search_result)
-        else: 
-            results = []
-        pagination = Paginator(results, 2)
-        pagenumber = request.GET.get('page')
-        users = pagination.get_page(pagenumber)
-        context = {'search_results': enumerate(users, 1), 'results': users, 'query': search_result}    
+class SearchFriend(ListAPIView): 
+    def get_queryset(self): 
+        queryset = User.objects.all()
+        search = self.request.query_params.get('search')
+        if search is not None: 
+            queryset = queryset.filter(Q(username__icontains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
+        return queryset 
+    serializer_class = SearchResultSerializer
+    pagination_class = SearchResultPaginator
+         
 
 def startCounter(request, pk): 
     Counter.objects.create(

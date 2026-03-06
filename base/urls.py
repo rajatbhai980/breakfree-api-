@@ -30,7 +30,6 @@ urlpatterns = [
     path('accept_friend_request/<int:pk>/', views.accept_friend_request, name='accept_friend_request'),
     path('reject_friend_request/<int:pk>/', views.reject_friend_request, name='reject_friend_request'), 
     path('remove_friend/<int:pk>/', views.remove_friend, name='remove_friend'),
-
     path('friend_list/', views.view_friend_list, name='friend_list'),
     path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
 ]
