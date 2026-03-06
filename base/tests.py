@@ -429,7 +429,7 @@ class TestSearchFriend(APITestCase):
         self.assertEqual(response.data['results'][0]['username'], 'rajat')
 
     def test_pagination_works(self): 
-        for i in range(1,21):
+        for i in range(1,22):
             User.objects.create_user(username=f'test{i}', password=f"Somecoolpassword!@{i}")
         response = self.client.get(self.url, format='json', data={'search': 'test', 'page':2})
         self.assertEqual(response.data['results'][0]['username'], 'test21')
