@@ -8,9 +8,6 @@ router.register(r'room_viewset', views.RoomViewSet, basename="room_viewset")
 
 
 urlpatterns = [
-    path('start_counter/<int:pk>/', views.startCounter, name='start_counter'),
-    path('stop_counter/<int:pk>/', views.stopCounter, name='stop_counter'),
-    path('leaderboard/<int:pk>/', views.leaderboard, name='leaderboard'), 
     path('room_authorization/<int:pk>/', views.RoomAuthorization.as_view(), name='room_authorization'),
     path('participants/<int:pk>', views.participants, name='participants'), 
     path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.addModerator, name='add_moderator'),
@@ -32,4 +29,8 @@ urlpatterns = [
     path('remove_friend/<int:pk>/', views.remove_friend, name='remove_friend'),
     path('friend_list/', views.view_friend_list, name='friend_list'),
     path('search_friend/', views.SearchFriend.as_view(), name='search_friend'), 
+
+    path('start_counter/<int:pk>/', views.start_counter, name='start_counter'),
+    path('stop_counter/<int:pk>/', views.stop_counter, name='stop_counter'),
+    path('view_leaderboard/<int:pk>/', views.view_leaderboard, name='view_leaderboard'), 
 ]

@@ -264,29 +264,33 @@ class SearchFriend(ListAPIView):
     pagination_class = SearchResultPaginator
          
 
-def startCounter(request, pk): 
+'''
+Counting and leaderboard logic here
+'''
+@api_view(['POST'])
+def start_counter(request, pk): 
     Counter.objects.create(
         user = request.user, 
         room = Room.objects.get(pk=pk)
     )
-    messages.success(request, "You have started the counter ")
-    return redirect('room', pk=pk)
+    return Response(status=status.HTTP_200_OK)
 
-def stopCounter(request, pk): 
+@api_view(['POST'])
+def stop_counter(request, pk): 
     count_object = Counter.objects.filter(user=request.user, room=Room.objects.get(pk=pk))
     count_object.delete()
-    messages.success(request, "You have stopped the counter ")
-    return redirect('room', pk=pk)
+    return Response(status=status.HTTP_200_OK)
 
-def leaderboard(request, pk): 
+@api_view(['GET'])
+def view_leaderboard(request, pk): 
     room = Room.objects.get(pk=pk)
     room_counts = Counter.objects.select_related(
         "user").filter(
             room=room).annotate(
                 raw_timesince=ExpressionWrapper(
                     (timezone.now() - F('created_at')), output_field=fields.DurationField())).order_by('-raw_timesince')
-    context = {'room_counts': enumerate(room_counts), 'room': room}
-    return render(request, 'base/leaderboard.html', context)
+    serializers = LeaderBoardSerializer(room_counts, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
 
 class RoomAuthorization(View): 
     def get(self, request, pk, *args, **kwargs): 

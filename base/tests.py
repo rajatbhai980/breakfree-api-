@@ -409,7 +409,7 @@ class TestFriendRequestSystem(APITestCase):
     def test_view_friend_list_200(self): 
         Friend.objects.create(friend1=self.user, friend2=self.second_user)
         Friend.objects.create(friend1=self.second_user, friend2=self.user)
-        another_friend = User.objects.create(username="yobey", password="playboy123@12")
+        another_friend = User.objects.create_user(username="yobey", password="playboy123@12")
         Friend.objects.create(friend1=self.user, friend2=another_friend)
         Friend.objects.create(friend1=another_friend, friend2=self.user)
         url=reverse('friend_list')
@@ -433,3 +433,34 @@ class TestSearchFriend(APITestCase):
             User.objects.create_user(username=f'test{i}', password=f"Somecoolpassword!@{i}")
         response = self.client.get(self.url, format='json', data={'search': 'test', 'page':2})
         self.assertEqual(response.data['results'][0]['username'], 'test21')
+
+class TestRoomLeaderboard(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username='rajat', password='angrymanS12!!')
+        self.client.force_login(self.user)
+    
+    def test_start_counter(self): 
+        room = Room.objects.create(room_name='No_criticizing_others')
+        url = reverse('start_counter', kwargs={'pk':room.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(Counter.objects.filter(user=self.user).exists())
+    
+    def test_stop_counter(self): 
+        room = Room.objects.create(room_name='No_criticizing_others')
+        Counter.objects.create(user=self.user, room=room)
+        url = reverse('stop_counter', kwargs={'pk':room.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(Counter.objects.filter(room=room).exists())
+
+    def test_leaderboard(self): 
+        room = Room.objects.create(room_name='No_criticizing_others')
+        another_user = User.objects.create_user(username="yobey", password='Miabhai1234@')
+        Counter.objects.create(user=another_user, room=room)
+        Counter.objects.create(user=self.user, room=room)
+        url = reverse('view_leaderboard', kwargs={'pk':room.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        usernames = [data['user']['username'] for data in response.data]
+        self.assertIn(self.user.username, usernames)

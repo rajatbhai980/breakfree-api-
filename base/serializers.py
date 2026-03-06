@@ -160,3 +160,15 @@ class SearchResultSerializer(serializers.ModelSerializer):
     class Meta: 
         model = User 
         fields = ['id', 'username', 'first_name', 'last_name']
+
+class LeaderboardUserSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User
+        fields = ['id', 'username']
+
+class LeaderBoardSerializer(serializers.ModelSerializer): 
+    user = LeaderboardUserSerializer()
+    raw_timesince = serializers.DurationField()
+    class Meta: 
+        model = Counter
+        fields = ['user', 'raw_timesince']
