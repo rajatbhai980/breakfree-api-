@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.views import View
-from .forms import CreateRoomForm, RoomAuthorizationForm
+from django.views import View 
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -168,6 +167,7 @@ def room(request, pk):
     '''
     login_url = '/login/'
     room_info = Room.objects.get(pk=pk) 
+    room_info.participants.add(request.user)
     participants = room_info.participants.all()
     room_counts = Counter.objects.select_related(
         "user").filter(
@@ -292,40 +292,34 @@ def view_leaderboard(request, pk):
     serializers = LeaderBoardSerializer(room_counts, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
 
-class RoomAuthorization(View): 
-    def get(self, request, pk, *args, **kwargs): 
-        room = Room.objects.get(pk=pk)
-        context = {'room': room}
-        return render(request, 'base/room_authorization.html', context)
-    def post(self, request, pk, * args, **kwargs): 
-        room_form = RoomAuthorizationForm(request.POST)
+class RoomAuthorization(APIView): 
+    def post(self, request, pk): 
+        room_form = RoomAuthorizationSerializer(data=request.data)
         room = Room.objects.get(pk=pk)
         if room_form.is_valid(): 
-            password = room_form.cleaned_data['password']
+            password = room_form.validated_data['password']
             room_password = room.password
             if password == room_password: 
-                messages.success(request, "authenticated")
-                return redirect("room", pk=pk)
-            else: 
-                messages.success(request, "try again")
-                return redirect("room_authorization", pk=pk)
-            
-        context = {'room': room}
-        return render(request, 'base/room_authorization.html', context)
-    
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
 def participants(request, pk): 
     room = Room.objects.get(pk=pk)
     #moderator group creation/fetch
     groupName = f"{room.room_name}_moderators"
     moderators, created = Group.objects.get_or_create(name=groupName)
-    isPrivate = room.private
-    isUserModerator = moderators.user_set.filter(pk=request.user.pk).exists()
+    is_private = room.private
+    is_user_moderator = moderators.user_set.filter(pk=request.user.pk).exists()
     participants = room.participants.all().annotate(is_moderator=Exists(
         moderators.user_set.filter(pk=OuterRef('pk'))
         #how does it know pk is of the user 
     ))
-    context = {'participants': enumerate(participants, 1), 'room': room, 'isPrivate': isPrivate, 'isUserModerator': isUserModerator}
-    return render(request, 'base/Participants.html', context)
+    data = {'participants': enumerate(participants, 1), 'room_name': room.room_name, 'is_room_private': is_private, 'is_user_moderator': is_user_moderator}
+    serializers = ParticipantsPageSerializer(data)
+    return Response(serializers, status=status.HTTP_200_OK)
+
 
 def addModerator(request, room_pk, user_pk):
     room = Room.objects.get(pk = room_pk)

@@ -172,3 +172,19 @@ class LeaderBoardSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Counter
         fields = ['user', 'raw_timesince']
+
+class RoomAuthorizationSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = Room
+        fields = ['password']
+
+class ParticipantsSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User 
+        fields = ['username']
+
+class ParticipantsPageSerializer(serializers.Serializer): 
+    room_name = serializers.CharField()
+    participants = ParticipantsSerializer(many=True)
+    is_user_moderator = serializers.BooleanField()
+    is_room_private = serializers.BooleanField()

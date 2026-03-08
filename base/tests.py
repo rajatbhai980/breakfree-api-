@@ -464,3 +464,19 @@ class TestRoomLeaderboard(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         usernames = [data['user']['username'] for data in response.data]
         self.assertIn(self.user.username, usernames)
+
+class TestRoomAuthorization(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username='rajat', password='GenshinImpact12#')
+        self.client.force_login(self.user)
+        self.room_owner = User.objects.create_user(username='Ayush', password='sadisticbast@#!')
+        self.room = Room.objects.create(host=self.room_owner, room_name='Sikari', password='1234', private=True)
+        self.url = reverse('room_authorization', kwargs={'pk': self.room.pk})
+
+    def test_sucessful_authorization(self): 
+        response = self.client.post(self.url, format='json', data={"password": "1234"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_failed_authorization(self): 
+        response = self.client.post(self.url, format='json', data={"password": "123455"})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
