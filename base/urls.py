@@ -8,11 +8,6 @@ router.register(r'room_viewset', views.RoomViewSet, basename="room_viewset")
 
 
 urlpatterns = [
-    path('participants/<int:pk>', views.participants, name='participants'), 
-    path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.addModerator, name='add_moderator'),
-    path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.removeModerator, name='remove_moderator'), 
-    path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.removeParticipant, name='remove_participant'), 
-
     #REST API 
     path('', views.home, name='home'),
     path('register/', views.Register.as_view(), name='register'),
@@ -31,6 +26,10 @@ urlpatterns = [
     path('start_counter/<int:pk>/', views.start_counter, name='start_counter'),
     path('stop_counter/<int:pk>/', views.stop_counter, name='stop_counter'),
     path('view_leaderboard/<int:pk>/', views.view_leaderboard, name='view_leaderboard'), 
-    path('room_authorization/<int:pk>/', views.RoomAuthorization.as_view(), name='room_authorization'),
-    
+    path('room_authorize/<int:pk>/', views.RoomAuthorize.as_view(), name='room_authorize'),
+    path('room_participants/<int:pk>', views.room_participants, name='room_participants'), 
+    path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.add_moderator, name='add_moderator'),
+    path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.remove_moderator, name='remove_moderator'), 
+
+    path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.remove_participant, name='remove_participant'), 
 ]

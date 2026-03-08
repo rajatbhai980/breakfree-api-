@@ -186,5 +186,6 @@ class ParticipantsSerializer(serializers.ModelSerializer):
 class ParticipantsPageSerializer(serializers.Serializer): 
     room_name = serializers.CharField()
     participants = ParticipantsSerializer(many=True)
+    is_user_host = serializers.BooleanField()
     is_user_moderator = serializers.BooleanField()
     is_room_private = serializers.BooleanField()

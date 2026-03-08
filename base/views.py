@@ -292,7 +292,7 @@ def view_leaderboard(request, pk):
     serializers = LeaderBoardSerializer(room_counts, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
 
-class RoomAuthorization(APIView): 
+class RoomAuthorize(APIView): 
     def post(self, request, pk): 
         room_form = RoomAuthorizationSerializer(data=request.data)
         room = Room.objects.get(pk=pk)
@@ -305,34 +305,35 @@ class RoomAuthorization(APIView):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
-def participants(request, pk): 
+def room_participants(request, pk): 
     room = Room.objects.get(pk=pk)
     #moderator group creation/fetch
     groupName = f"{room.room_name}_moderators"
     moderators, created = Group.objects.get_or_create(name=groupName)
     is_private = room.private
+    is_user_host = request.user == room.host
     is_user_moderator = moderators.user_set.filter(pk=request.user.pk).exists()
     participants = room.participants.all().annotate(is_moderator=Exists(
         moderators.user_set.filter(pk=OuterRef('pk'))
         #how does it know pk is of the user 
     ))
-    data = {'participants': enumerate(participants, 1), 'room_name': room.room_name, 'is_room_private': is_private, 'is_user_moderator': is_user_moderator}
+    data = {'participants': participants, 'room_name': room.room_name, 'is_room_private': is_private, 'is_user_host':is_user_host, 'is_user_moderator': is_user_moderator}
     serializers = ParticipantsPageSerializer(data)
-    return Response(serializers, status=status.HTTP_200_OK)
+    return Response(serializers.data, status=status.HTTP_200_OK)
 
-
-def addModerator(request, room_pk, user_pk):
+@api_view(['POST'])
+def add_moderator(request, room_pk, user_pk):
     room = Room.objects.get(pk = room_pk)
     candidate = User.objects.get(pk = user_pk)
 
     groupName = f"{room.room_name}_moderators"
-    group = Group.objects.get(name=groupName)
+    group, _ = Group.objects.get_or_create(name=groupName)
     
     candidate.groups.add(group)
-    messages.success(request, "sucessfully promoted! ")
-    return redirect('participants', pk=room.pk)
+    return Response(status=status.HTTP_201_CREATED)
 
-def removeModerator(request, room_pk, user_pk): 
+@api_view(['POST'])
+def remove_moderator(request, room_pk, user_pk): 
     room = Room.objects.get(pk=room_pk)
     candidate = User.objects.get(pk=user_pk)
 
@@ -340,21 +341,19 @@ def removeModerator(request, room_pk, user_pk):
     group = Group.objects.get(name=groupName)
 
     candidate.groups.remove(group)
-    messages.success(request, "sucessfully demoted!")
-    return redirect('participants', pk=room_pk)
+    return Response(status=status.HTTP_404_NOT_FOUND)
 
-def removeParticipant(request, room_pk, user_pk): 
+@api_view(['POST'])
+def remove_participant(request, room_pk, user_pk): 
     room = Room.objects.get(pk=room_pk)
     user = User.objects.get(pk=user_pk)
 
     #if user was a moderator 
     groupName = f"{room.room_name}_moderators"
-    group = Group.objects.get(name=groupName)
-    if group.user_set.filter(pk=user.pk): 
+    group = Group.objects.filter(name=groupName).first()
+    if group and group.user_set.filter(pk=user.pk): 
         group.user_set.remove(user)
 
     room.participants.remove(user)
-    messages.success(request, "sucessfully removed!")
-    return redirect('participants', pk=room_pk)
-
+    return Response(status=status.HTTP_404_NOT_FOUND)
 

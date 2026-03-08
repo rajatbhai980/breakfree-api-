@@ -5,6 +5,7 @@ from rest_framework import status
 from django.urls import reverse 
 from .serializers import RoomSerializer
 from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth.models import Group
 # Create your tests here.
 
 class TestHome(APITestCase): 
@@ -465,13 +466,13 @@ class TestRoomLeaderboard(APITestCase):
         usernames = [data['user']['username'] for data in response.data]
         self.assertIn(self.user.username, usernames)
 
-class TestRoomAuthorization(APITestCase): 
+class TestRoomAuthorize(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username='rajat', password='GenshinImpact12#')
         self.client.force_login(self.user)
         self.room_owner = User.objects.create_user(username='Ayush', password='sadisticbast@#!')
         self.room = Room.objects.create(host=self.room_owner, room_name='Sikari', password='1234', private=True)
-        self.url = reverse('room_authorization', kwargs={'pk': self.room.pk})
+        self.url = reverse('room_authorize', kwargs={'pk': self.room.pk})
 
     def test_sucessful_authorization(self): 
         response = self.client.post(self.url, format='json', data={"password": "1234"})
@@ -480,3 +481,50 @@ class TestRoomAuthorization(APITestCase):
     def test_failed_authorization(self): 
         response = self.client.post(self.url, format='json', data={"password": "123455"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class TestRoomAuthorizationSystem(APITestCase): 
+    def setUp(self): 
+        self.user = User.objects.create_user(username='rajat', password='WillAitakemyjob!@#')
+        self.client.force_login(self.user)
+        self.room_owner = User.objects.create_user(username='Ayush', password='chyapchusinari@#!')
+        self.room = Room.objects.create(host=self.room_owner, room_name='test', private=True)
+    
+    def test_participant_info_200(self): 
+        self.room.participants.add(self.room_owner)
+        self.room.participants.add(self.user)
+        url = reverse('room_participants', kwargs={'pk':self.room.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['room_name'], self.room.room_name)
+        participants = [response.data['participants'][i]['username'] for i in range(len(response.data['participants']))]
+        self.assertIn(self.user.username, participants)
+        self.assertIn(self.room_owner.username, participants)
+        self.assertTrue(response.data['is_room_private'])
+        self.assertFalse(response.data['is_user_host'])
+
+    def test_add_moderator_201(self): 
+        url = reverse('add_moderator', kwargs={'room_pk': self.room.pk, 'user_pk': self.user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        group = Group.objects.get(name=f'{self.room.room_name}_moderators')
+        user_in_group = User.objects.filter(pk=self.user.pk, groups=group).exists()
+        self.assertTrue(user_in_group)
+
+    def test_remove_moderator_404(self): 
+        group = Group.objects.create(name=f'{self.room.room_name}_moderators')
+        self.user.groups.add(group)
+        url = reverse('remove_moderator', kwargs={'room_pk': self.room.pk, 'user_pk': self.user.pk})
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        group = Group.objects.get(name=f'{self.room.room_name}_moderators')
+        user_in_group = User.objects.filter(pk=self.user.pk, groups=group).exists()
+        self.assertFalse(user_in_group)
+
+    def test_remove_participant_404(self): 
+        url = reverse('remove_participant', kwargs={'room_pk':self.room.pk, 'user_pk': self.user.pk})
+        self.room.participants.add(self.room_owner)
+        self.room.participants.add(self.user)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        exists = self.room.participants.filter(pk=self.user.pk).exists()
+        self.assertFalse(exists)
