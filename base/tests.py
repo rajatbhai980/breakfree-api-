@@ -10,8 +10,10 @@ from django.contrib.auth.models import Group
 
 class TestHome(APITestCase): 
     def setUp(self): 
-        self.user = User.objects.create_user(username="rajat", password='123')
-        self.client.force_login(self.user)
+        self.user = User.objects.create_user(username="rajat", password='Feelinglucky123@')
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={"username": "rajat", "password":"Feelinglucky123@"})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
 
     def test_filtering(self): 
         url = reverse("home")
@@ -120,7 +122,8 @@ class TestLogin(APITestCase):
     def setUp(self): 
         self.user = User.objects.create_user(username="pranjal", password="singer")
         self.url = reverse('login')
-    def test_sucessful_login(self): 
+
+    def test_sucessful_login_200(self): 
         data = {
             "username": "pranjal", 
             "password": "singer", 
@@ -128,13 +131,13 @@ class TestLogin(APITestCase):
         response = self.client.post(self.url, format='json', data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-    def test_wrong_password(self): 
+    def test_wrong_password_401(self): 
         data = {
             "username": "pranjal", 
             "password": "wrong_pass", 
         }
         response = self.client.post(self.url, format='json', data=data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_missing_username(self): 
         data = {
@@ -149,17 +152,19 @@ class TestLogin(APITestCase):
             "password": "singer", 
         }
         response = self.client.post(self.url, format='json', data=data)
-        self.assertIn('access_token', response.data)
-        self.assertIn('refresh_token', response.data)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
 
-        token_obj = AccessToken(response.data['access_token'])
+        token_obj = AccessToken(response.data['access'])
         self.assertEqual(self.user.id, int(token_obj['user_id']))
 
 class TestProfile(APITestCase):
     def setUp(self): 
         self.user1 = User.objects.create_user(username="rajat", password="freefire")
         self.user2 = User.objects.create_user(username="pranjal", password = "freefire")
-        self.client.force_login(self.user1)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={"username": "rajat", "password":"freefire"})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
     
     def test_non_existing_user_404(self): 
         url = reverse('profile', kwargs={'pk': 10})
@@ -194,7 +199,9 @@ class TestEditProfile(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="rajat", password='freefire')
         self.url = reverse('edit_profile')
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={"username": "rajat", "password":"freefire"})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
     
     def test_sucessful_200(self): 
         data = {
@@ -240,7 +247,9 @@ class TestEditProfile(APITestCase):
 class TestCreateRoom(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="PlaysApex123@")
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'PlaysApex123@'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.url = reverse('room_viewset-list')
         self.data = {
     "room_name": "Football", 
@@ -275,7 +284,10 @@ class TestCreateRoom(APITestCase):
 class TestReadRoom(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="GenshinImpact123@")
-        self.client.force_authenticate(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'GenshinImpact123@'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
+        self.url = reverse('room_viewset-list')
         self.room = Room.objects.create(host=self.user, room_name="test", description='this is for test')
         self.url = reverse('room', kwargs={'pk': self.room.pk})
     
@@ -313,7 +325,9 @@ class TestReadRoom(APITestCase):
 class TestUpdateRoom(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="TimeFlies!324")
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'TimeFlies!324'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.room = Room.objects.create(room_name="test")
         self.url = reverse('room_viewset-detail', kwargs = {'pk': self.room.pk})
 
@@ -333,10 +347,10 @@ class TestUpdateRoom(APITestCase):
     def test_genre_creation(self): 
         data = {
             "room_name": "test", 
-            "genre_name": "test"
+            "genre_name": "auto_genre_creation"
             }
         self.client.patch(self.url, format='json', data=data)
-        genre_created = Genre.objects.filter(pk=1).exists()
+        genre_created = Genre.objects.filter(name='auto_genre_creation').exists()
         self.assertTrue(genre_created)
     
     def test_auto_privatization(self): 
@@ -346,13 +360,15 @@ class TestUpdateRoom(APITestCase):
             }
     
         self.client.patch(self.url, format='json', data=data)
-        room = Room.objects.get(pk=1)
+        room = Room.objects.get(pk=self.room.pk)
         self.assertTrue(room.private)
     
 class TestDeleteRoom(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="LikeaBrandnewperson123@")
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'LikeaBrandnewperson123@'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.room = Room.objects.create(room_name="test", host=self.user)
         self.url = reverse('room_viewset-detail', kwargs={'pk': self.room.pk})
     
@@ -366,7 +382,9 @@ class TestFriendRequestSystem(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="rajat", password="Genshinplayers234#")
         self.second_user = User.objects.create_user(username="ayush", password="guffadiboy1234#$")
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'Genshinplayers234#'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
     
     def test_create_friend_request_201(self): 
         url = reverse('create_friend_request', kwargs={'pk': self.second_user.pk})
@@ -421,7 +439,9 @@ class TestFriendRequestSystem(APITestCase):
 class TestSearchFriend(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username="rajat", password="gridingmachine123!")
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'gridingmachine123!'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.url = reverse('search_friend')
 
     def test_search_works(self): 
@@ -438,7 +458,9 @@ class TestSearchFriend(APITestCase):
 class TestRoomLeaderboard(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username='rajat', password='angrymanS12!!')
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'angrymanS12!!'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
     
     def test_start_counter(self): 
         room = Room.objects.create(room_name='No_criticizing_others')
@@ -469,7 +491,9 @@ class TestRoomLeaderboard(APITestCase):
 class TestRoomAuthorize(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username='rajat', password='GenshinImpact12#')
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'GenshinImpact12#'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.room_owner = User.objects.create_user(username='Ayush', password='sadisticbast@#!')
         self.room = Room.objects.create(host=self.room_owner, room_name='Sikari', password='1234', private=True)
         self.url = reverse('room_authorize', kwargs={'pk': self.room.pk})
@@ -485,7 +509,9 @@ class TestRoomAuthorize(APITestCase):
 class TestRoomAuthorizationSystem(APITestCase): 
     def setUp(self): 
         self.user = User.objects.create_user(username='rajat', password='WillAitakemyjob!@#')
-        self.client.force_login(self.user)
+        auth = reverse('login')
+        response = self.client.post(auth, format='json', data={'username':'rajat', 'password':'WillAitakemyjob!@#'})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {response.data['access']}')
         self.room_owner = User.objects.create_user(username='Ayush', password='chyapchusinari@#!')
         self.room = Room.objects.create(host=self.room_owner, room_name='test', private=True)
     

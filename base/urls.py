@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views 
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'view_all_genre', views.ViewAllGenre, basename='view_all_genre')
@@ -11,7 +12,8 @@ urlpatterns = [
     #REST API 
     path('', views.home, name='home'),
     path('register/', views.Register.as_view(), name='register'),
-    path('login/', views.Login.as_view(), name='login'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('refresh_login/', TokenRefreshView.as_view(), name='refresh_login'),
     path('profile/<int:pk>/', views.ProfilePage.as_view(), name='profile'),
     path('edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
     path('room/<int:pk>/', views.room, name='room'),
@@ -30,6 +32,5 @@ urlpatterns = [
     path('room_participants/<int:pk>', views.room_participants, name='room_participants'), 
     path('add_moderator/<int:room_pk>/user/<int:user_pk>/', views.add_moderator, name='add_moderator'),
     path('remove_moderator/<int:room_pk>/user/<int:user_pk>/', views.remove_moderator, name='remove_moderator'), 
-
     path('remove_participant/<int:room_pk>/user/<int:user_pk>/', views.remove_participant, name='remove_participant'), 
 ]

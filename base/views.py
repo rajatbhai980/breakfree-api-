@@ -74,23 +74,6 @@ class Register(APIView):
             return Response(regis_data.data, status=status.HTTP_201_CREATED)
         else: 
             return Response(regis_data.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-class Login(APIView): 
-    '''
-        jwt token setup is ready but using rest session for development 
-        will use it after the project is done 
-    '''
-    def post(self, request): 
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user: 
-            token = RefreshToken.for_user(user)
-            return Response({
-                "access_token": str(token.access_token), 
-                "refresh_token": str(token)
-            }, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
     
 class ProfilePage(APIView):
     def get(self, request, pk):
