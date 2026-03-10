@@ -13,7 +13,7 @@ from django.db.models import F, fields, ExpressionWrapper, Q, Exists, OuterRef, 
 from django.db.models.functions import TruncSecond
 from datetime import datetime
 from django.core.paginator import Paginator
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from .serializers import *
 from rest_framework.response import Response 
@@ -21,6 +21,7 @@ from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .pagination import SearchResultPaginator
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated 
 
 
 #for getting the user model 
@@ -28,43 +29,43 @@ User = get_user_model()
 
 # Create your views here.
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def home(request):
-    if request.user.is_authenticated: 
-        Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
-        friendList = []
-        genres = Genre.objects.all()
-        genre_name = request.GET.get('genre')
-        for friendRow in Friends: 
-            friendList.append(friendRow.friend2)
-        rooms = Room.objects.filter( Q(host__in=friendList) | Q(host=request.user)).annotate(room_authenticated=Exists(
-            Room.participants.through.objects.filter(
-                room_id=OuterRef('pk'),
-                user_id=request.user.pk
-            )
-        ))
-        if genre_name == None: 
-            genre_name = ""
-        if genre_name: 
-            genre = Genre.objects.get(name=genre_name)
-            rooms = rooms.filter(genre=genre)
-        page_number = request.GET.get('page')
-        pages = Paginator(rooms, 3)
-        curr_page = pages.get_page(page_number)
-        next_page = curr_page.next_page_number() if curr_page.has_next() else -1 
-        previous_page = curr_page.previous_page_number() if curr_page.has_previous() else -1 
-        data = {
-            "has_next": curr_page.has_next(), 
-            "has_previous": curr_page.has_previous(), 
-            "next_page_number": next_page, 
-            "previous_page_number": previous_page, 
-            "genres": genres, 
-            "genre_name": genre_name, 
-            "rooms": curr_page.object_list,
-            "is_authenticated": request.user.is_authenticated, 
-        }
-        serializer = HomePageSerializer(data)
-        return Response(serializer.data)
-    return Response(status=status.HTTP_200_OK)
+    permission_classes = [IsAuthenticated]
+    Friends = Friend.objects.select_related('friend2').filter(friend1 = request.user)
+    friendList = []
+    genres = Genre.objects.all()
+    genre_name = request.GET.get('genre')
+    for friendRow in Friends: 
+        friendList.append(friendRow.friend2)
+    rooms = Room.objects.filter( Q(host__in=friendList) | Q(host=request.user)).annotate(room_authenticated=Exists(
+        Room.participants.through.objects.filter(
+            room_id=OuterRef('pk'),
+            user_id=request.user.pk
+        )
+    ))
+    if genre_name == None: 
+        genre_name = ""
+    if genre_name: 
+        genre = Genre.objects.get(name=genre_name)
+        rooms = rooms.filter(genre=genre)
+    page_number = request.GET.get('page')
+    pages = Paginator(rooms, 3)
+    curr_page = pages.get_page(page_number)
+    next_page = curr_page.next_page_number() if curr_page.has_next() else -1 
+    previous_page = curr_page.previous_page_number() if curr_page.has_previous() else -1 
+    data = {
+        "has_next": curr_page.has_next(), 
+        "has_previous": curr_page.has_previous(), 
+        "next_page_number": next_page, 
+        "previous_page_number": previous_page, 
+        "genres": genres, 
+        "genre_name": genre_name, 
+        "rooms": curr_page.object_list,
+        "is_authenticated": request.user.is_authenticated, 
+    }
+    serializer = HomePageSerializer(data)
+    return Response(serializer.data)
 
 class Register(APIView):  
     def post(self, request): 
@@ -76,6 +77,7 @@ class Register(APIView):
             return Response(regis_data.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ProfilePage(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         profile = Profile.objects.get(user=user)
@@ -94,6 +96,7 @@ class ProfilePage(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class EditProfile(APIView): 
+    permission_classes = [IsAuthenticated]
     def get(self, request): 
         '''
         Single Serializer instead of nested serializer 
@@ -128,6 +131,7 @@ class EditProfile(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
 class RoomViewSet(viewsets.ModelViewSet): 
+    permission_classes=[IsAuthenticated]
     '''
     All of the room method are here
     Create Room - get without pk 
@@ -140,6 +144,7 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @login_required
 def room(request, pk):
     '''

@@ -2,10 +2,10 @@
 FROM python:3.13-slim AS builder
 
 # Create the app directory
-RUN mkdir /breakfree
+RUN mkdir /breakfree-api
  
 # Set the working directory inside the container
-WORKDIR /breakfree
+WORKDIR /breakfree-api
  
 # Set environment variables 
 # Prevents Python from writing pyc files to disk
@@ -17,7 +17,7 @@ ENV PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip 
  
 # Copy the Django project  and install dependencies
-COPY requirements.txt  /breakfree/
+COPY requirements.txt  /breakfree-api/
  
 # run this command to install all dependencies 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -27,15 +27,15 @@ FROM python:3.13-slim
 
  #switch to system user 
 RUN useradd -m -r appuser && \
-    mkdir /breakfree && \
-    chown -R appuser /breakfree
+    mkdir /breakfree-api && \
+    chown -R appuser /breakfree-api
 
 # Copy the Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 #change working directory 
-WORKDIR /breakfree
+WORKDIR /breakfree-api
 
 # Copy application code change owner 
 COPY --chown=appuser:appuser . .
@@ -44,7 +44,7 @@ COPY --chown=appuser:appuser . .
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1 
 
-RUN chmod +x /breakfree/entrypoint.prod.sh 
+RUN chmod +x /breakfree-api/entrypoint.prod.sh 
 
 #switch user 
 USER appuser 
@@ -52,4 +52,4 @@ USER appuser
 # Expose the Django port
 EXPOSE 8000
 
-ENTRYPOINT ["/breakfree/entrypoint.prod.sh"]
+ENTRYPOINT ["/breakfree-api/entrypoint.prod.sh"]
